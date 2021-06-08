@@ -73,22 +73,24 @@ The return type changes according to `type_str`, so this function is NOT
 guaranteed to be type coherent, even though it should be so.
 """
 function es2julia(d::T, type_str::String) where T
-    if type_str == "REAL" return unsafe_load(d) end
-    if type_str == "STRING" return unsafe_string(d) end
-    if type_str == "BOOL" return unsafe_load(d) end
-    if type_str == "INTEGER" return unsafe_load(d) end
-    if type_str == "STEREOSAMPLE" return convert(Tuple{Float32, Float32}, icxx"*$d;") end
-    if type_str == "VECTOR_REAL" return convert(Vector{Float32}, icxx"*$d;") end
-    if type_str == "VECTOR_INTEGER" return convert(Vector{Int32}, icxx"*$d;") end
-    if type_str == "VECTOR_COMPLEX" return convert(Vector{ComplexF32}, icxx"*$d;") end
-    if type_str == "VECTOR_STRING" return convert(Vector{String}, icxx"*$d;") end
-    if type_str == "VECTOR_STEREOSAMPLE" return convert(Matrix{Float32}, icxx"*$d;") end
-    if type_str == "VECTOR_REAL" return convert(Vector{Vector{Float32}}, icxx"*$d;") end
-    if type_str == "VECTOR_COMPLEX" return convert(Vector{Vector{ComplexF32}}, icxx"*$d;") end
-    if type_str == "VECTOR_STRING" return convert(Vector{Vector{String}}, icxx"*$d;") end
-    if type_str == "MATRIX_REAL" return convert(Matrix{Float32}, icxx"*$d;") end
-    error("Cannot convert from type $type_str to Julia!")
-    # if type_str == "POOL" new Pool;
+    if type_str == "REAL" return unsafe_load(d)
+    elseif type_str == "STRING" return unsafe_string(d)
+    elseif type_str == "BOOL" return unsafe_load(d)
+    elseif type_str == "INTEGER" return unsafe_load(d)
+    elseif type_str == "STEREOSAMPLE" return convert(Tuple{Float32, Float32}, icxx"*$d;")
+    elseif type_str == "VECTOR_REAL" return convert(Vector{Float32}, icxx"*$d;")
+    elseif type_str == "VECTOR_INTEGER" return convert(Vector{Int32}, icxx"*$d;")
+    elseif type_str == "VECTOR_COMPLEX" return convert(Vector{ComplexF32}, icxx"*$d;")
+    elseif type_str == "VECTOR_STRING" return convert(Vector{String}, icxx"*$d;")
+    elseif type_str == "VECTOR_STEREOSAMPLE" return convert(Matrix{Float32}, icxx"*$d;")
+    elseif type_str == "VECTOR_REAL" return convert(Vector{Vector{Float32}}, icxx"*$d;")
+    elseif type_str == "VECTOR_COMPLEX" return convert(Vector{Vector{ComplexF32}}, icxx"*$d;")
+    elseif type_str == "VECTOR_STRING" return convert(Vector{Vector{String}}, icxx"*$d;")
+    elseif type_str == "MATRIX_REAL" return convert(Matrix{Float32}, icxx"*$d;")
+    else
+        # @warn "Cannot convert from type $type_str to Julia!"
+        return d
+    end
 end
 
 """
