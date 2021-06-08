@@ -32,18 +32,19 @@ end
 
 
 @inbounds for type in ["standard", "streaming"]
+    fn_name = type * "_factory"
     @simd for i in 0:30
         # $var is interpolated in the code of the function at inclusion time
         # \$var is interpolated at runtime
-        fn = Meta.parse("""
-        function $(type)_factory(name::String, params::Vararg{Pair{Symbol}, $i})
-            return icxx\"\"\"
-            $type::AlgorithmFactory& factory = $type::AlgorithmFactory::instance();
-            $type::Algorithm* algo = factory.create(\$name $(_params2cppcode(i)));
-            return algo;
-            \"\"\"
+        fn = quote
+            function $(Symbol(fn_name))(name::String, params::Vararg{Pair{Symbol}, $i})
+                return icxx"""
+                $(Symbol(type))::AlgorithmFactory& factory = $(Symbol(type))::AlgorithmFactory::instance();
+                $(Symbol(type))::Algorithm* algo = factory.create(\$name $(_params2cppcode(i)));
+                return algo;
+                """
+            end
         end
-        """)
         eval(fn)
     end
 end
@@ -100,18 +101,18 @@ function (self::Algorithm)(inputs::Pair...)
     # allocate outputs
     outputTypes = icxx"vector<const type_info*> outputTypeInfos = $(self.algo)->outputTypes(); outputTypes;"
     outputNames = icxx"vector<string> outputNames = $(self.algo)->outputNames(); outputNames;"
-    outputPtrs = Vector{Ptr{Int32}}(undef, self.nout)
+    outputs = Vector{Pair}(undef, self.nout)
     for (i, name) in enumerate(outputNames)
         # instantiate a pointer to the correct Essentia type
         v = getCppObjPtr(outputTypes[i])
         icxx"$(self.algo)->output($name).set($v);"
-        outputPtrs[i] = v
+        outputs[i] = Symbol(unsafe_string(name)) => icxx"*$v;"
     end
     # compute
     icxx"$(self.algo)->compute();"
-    # convert to julia
-    outputs = Dict(
-        unsafe_string(outputNames[i-1]) => es2julia(objPtr) for (i, objPtr) in enumerate(outputPtrs))
+    # # convert to julia
+    # outputs = Dict(
+    #     unsafe_string(outputNames[i-1]) => es2julia(objPtr) for (i, objPtr) in enumerate(outputPtrs))
     # disable GC
     GC.enable(true)
     # return
