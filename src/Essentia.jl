@@ -32,19 +32,18 @@ end
 
 
 @inbounds for type in ["standard", "streaming"]
-    fn_name = type * "_factory"
     @simd for i in 0:30
         # $var is interpolated in the code of the function at inclusion time
         # \$var is interpolated at runtime
-        fn = quote
-            function $(Symbol(fn_name))(name::String, params::Vararg{Pair{Symbol}, $i})
-                return icxx"""
-                $(Symbol(type))::AlgorithmFactory& factory = $(Symbol(type))::AlgorithmFactory::instance();
-                $(Symbol(type))::Algorithm* algo = factory.create(\$name $(_params2cppcode(i)));
-                return algo;
-                """
-            end
+        fn = Meta.parse("""
+        function $(type)_factory(name::String, params::Vararg{Pair{Symbol}, $i})
+            return icxx\"\"\"
+            $type::AlgorithmFactory& factory = $type::AlgorithmFactory::instance();
+            $type::Algorithm* algo = factory.create(\$name $(_params2cppcode(i)));
+            return algo;
+            \"\"\"
         end
+        """)
         eval(fn)
     end
 end
