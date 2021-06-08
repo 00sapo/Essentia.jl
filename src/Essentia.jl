@@ -3,6 +3,7 @@ module Essentia
 __precompile__(false)
 using Cxx
 using Libdl
+using Infiltrator
 include("Init.jl")
 include("Types.jl")
 
@@ -75,11 +76,11 @@ end
 """
     function (
         self::Algorithm)(inputs::Pair{String, T}...
-    )::Tuple{Vector{Pair{String, T}}, Vector{V}} where T, V
+    ) where T
 
     function (
         self::Algorithm)(inputs::Tuple{Vector{Pair{String, T}}, Vector{V}}
-    )::Tuple{Vector{Pair{String, T}}, Vector{V}} where T, V
+    ) where T
 
 Executes the algorithm. Note that while this function is running, the garbage-collector is suspended!
 
@@ -100,7 +101,7 @@ Executes the algorithm. Note that while this function is running, the garbage-co
 Use `jj` function or macro to get a dictionary of Julia objects
 """
 function (self::Algorithm)(
-    inputs::Pair{String, T}...)::Tuple{Vector{Pair{String, T}}, Vector{V}} where {T, V}
+    inputs::Pair{String, T}...) where T
 
     # disable GC
     GC.enable(false)
@@ -117,7 +118,7 @@ function (self::Algorithm)(
         # if inputs are already C++, they're left untouched
         k = unsafe_string(name)
         v = juliaInputs[k]
-        if typeInfoToStr(inputTypes[i] == "VECTOR_STEREOSAMPLE")
+        if typeInfoToStr(inputTypes[i - 1]) == "VECTOR_STEREOSAMPLE"
             _v = convert(EssentiaVector{EssentiaTuple}, v)
         else
             _v = julia2es(v)
@@ -130,9 +131,9 @@ function (self::Algorithm)(
     outputs = Vector{Pair}(undef, self.nout)
     for (i, name) in enumerate(outputNames)
         # instantiate a pointer to the correct Essentia type
-        output_type = outputTypes[i]
+        output_type = outputTypes[i - 1]
         v = getCppObjPtr(output_type)
-        icxx"$(self.algo)->output($name).set($v);"
+        icxx"$(self.algo)->output($name).set(*$v);"
         # do we need the pointer here?
         outputs[i] = unsafe_string(name) => (icxx"*$v;", output_type)
     end
@@ -165,6 +166,8 @@ end
 
 """
 Same as function `jj`, but in macro style
+
+        TODO: fix this
 """
 macro jj(expr)
     quote

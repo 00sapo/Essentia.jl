@@ -7,31 +7,32 @@ const EssentiaComplex{T, N} = cxxt"complex<$T>"{N} where {T, N}
 
 
 """
-Given a `type_info` C++ structure, returns a string which describes it (as Essentia Python bindings)
+Given a `type_info *` C++ structure, returns a string which describes it (as Essentia Python bindings)
 """
-function typeInfoToStr(tp)::String
+function typeInfoToStr(type_info_ptr)::String
     # the following is copied from https://github.com/MTG/essentia/blob/master/src/python/typedefs.h#L62
+    tp = icxx"*$type_info_ptr;"
     v = icxx"""
-  if (essentia::sameType($tp, typeid(essentia::Real)))return $("REAL");
-  if (essentia::sameType($tp, typeid(std::string)))return $("STRING");
-  if (essentia::sameType($tp, typeid(int)))return $("INTEGER");
-  if (essentia::sameType($tp, typeid(bool)))return $("BOOL");
-  if (essentia::sameType($tp, typeid(essentia::StereoSample)))return $("STEREOSAMPLE");
-  if (essentia::sameType($tp, typeid(std::vector<essentia::Real>)))return $("VECTOR_REAL");
-  if (essentia::sameType($tp, typeid(std::vector<std::string>)))return $("VECTOR_STRING");
-  if (essentia::sameType($tp, typeid(std::vector<std::complex<essentia::Real> >)))return $("VECTOR_COMPLEX");
-  if (essentia::sameType($tp, typeid(std::vector<int>)))return $("VECTOR_INTEGER");
-  if (essentia::sameType($tp, typeid(std::vector<essentia::StereoSample>)))return $("VECTOR_STEREOSAMPLE");
-  if (essentia::sameType($tp, typeid(std::vector<std::vector<essentia::Real> >)))return $("VECTOR_VECTOR_REAL");
-  if (essentia::sameType($tp, typeid(std::vector<std::vector<std::complex<essentia::Real> > >)))return $("VECTOR_VECTOR_COMPLEX");
-  if (essentia::sameType($tp, typeid(std::vector<std::vector<std::string> >)))return $("VECTOR_VECTOR_STRING");
-  if (essentia::sameType($tp, typeid(std::vector<std::vector<essentia::StereoSample> >)))return $("VECTOR_VECTOR_STEREOSAMPLE");
-  if (essentia::sameType($tp, typeid(essentia::Tensor<essentia::Real>)))return $("TENSOR_REAL");
-  if (essentia::sameType($tp, typeid(std::vector<essentia::Tensor<essentia::Real> >)))return $("VECTOR_TENSOR_REAL");
-  if (essentia::sameType($tp, typeid(TNT::Array2D<essentia::Real>)))return $("MATRIX_REAL");
-  if (essentia::sameType($tp, typeid(std::vector<TNT::Array2D<essentia::Real> >)))return $("VECTOR_MATRIX_REAL");
-  if (essentia::sameType($tp, typeid(essentia::Pool)))return $("POOL");
- return $("UNDEFINED");
+      if (essentia::sameType($tp, typeid(essentia::Real)))return $("REAL");
+      if (essentia::sameType($tp, typeid(std::string)))return $("STRING");
+      if (essentia::sameType($tp, typeid(int)))return $("INTEGER");
+      if (essentia::sameType($tp, typeid(bool)))return $("BOOL");
+      if (essentia::sameType($tp, typeid(essentia::StereoSample)))return $("STEREOSAMPLE");
+      if (essentia::sameType($tp, typeid(std::vector<essentia::Real>)))return $("VECTOR_REAL");
+      if (essentia::sameType($tp, typeid(std::vector<std::string>)))return $("VECTOR_STRING");
+      if (essentia::sameType($tp, typeid(std::vector<std::complex<essentia::Real> >)))return $("VECTOR_COMPLEX");
+      if (essentia::sameType($tp, typeid(std::vector<int>)))return $("VECTOR_INTEGER");
+      if (essentia::sameType($tp, typeid(std::vector<essentia::StereoSample>)))return $("VECTOR_STEREOSAMPLE");
+      if (essentia::sameType($tp, typeid(std::vector<std::vector<essentia::Real> >)))return $("VECTOR_VECTOR_REAL");
+      if (essentia::sameType($tp, typeid(std::vector<std::vector<std::complex<essentia::Real> > >)))return $("VECTOR_VECTOR_COMPLEX");
+      if (essentia::sameType($tp, typeid(std::vector<std::vector<std::string> >)))return $("VECTOR_VECTOR_STRING");
+      if (essentia::sameType($tp, typeid(std::vector<std::vector<essentia::StereoSample> >)))return $("VECTOR_VECTOR_STEREOSAMPLE");
+      // if (essentia::sameType($tp, typeid(essentia::Tensor<essentia::Real>)))return $("TENSOR_REAL");
+      // if (essentia::sameType($tp, typeid(std::vector<essentia::Tensor<essentia::Real> >)))return $("VECTOR_TENSOR_REAL");
+      if (essentia::sameType($tp, typeid(TNT::Array2D<essentia::Real>)))return $("MATRIX_REAL");
+      if (essentia::sameType($tp, typeid(std::vector<TNT::Array2D<essentia::Real> >)))return $("VECTOR_MATRIX_REAL");
+      // if (essentia::sameType($tp, typeid(essentia::Pool)))return $("POOL");
+     return $("UNDEFINED");
     """
     # at now, Cxx cannot return strings... so creating the string in Julia and
     # makes it converting to `char*` and when it comes back it's still a
@@ -41,30 +42,30 @@ end
 
 """
 Given a `type_info` C++ structure, allocates the corresponding object and return a pointer to it
+
+This function is NOT type-coherent!
 """
-function getCppObjPtr(type_info)::Ptr{T} where T<:Integer
+function getCppObjPtr(type_info)
     type_str = typeInfoToStr(type_info)
     # almost copied from
     # https://github.com/MTG/essentia/blob/master/src/python/pyalgorithm.cpp#L284
-    return icxx"""
-    std::string v($type_str);
-    if (v == "REAL") return new Real;
-    if (v == "STRING") return new string;
-    if (v == "BOOL") return new bool;
-    if (v == "INTEGER") return new int;
-    if (v == "STEREOSAMPLE") return new StereoSample;
-    if (v == "VECTOR_REAL") return new vector<Real>;
-    if (v == "VECTOR_INTEGER") return new vector<int>;
-    if (v == "VECTOR_COMPLEX") return new vector<complex<Real> >;
-    if (v == "VECTOR_STRING") return new vector<string>;
-    if (v == "VECTOR_STEREOSAMPLE") return new vector<StereoSample>;
-    if (v == "VECTOR_VECTOR_REAL") return new vector<vector<Real> >;
-    if (v == "VECTOR_VECTOR_COMPLEX") return new vector<vector<complex<Real> > >;
-    if (v == "VECTOR_VECTOR_STRING") return new vector<vector<string> >;
-    if (v == "TENSOR_REAL") return new Tensor<Real>();
-    if (v == "MATRIX_REAL) return new TNT::Array2D<Real>;
-    if (v == "POOL") return new Pool;
-    """
+    if type_str == "REAL" return icxx"new Real;"
+    elseif type_str == "STRING" return icxx"new string;"
+    elseif type_str == "BOOL" return icxx"new bool;"
+    elseif type_str == "INTEGER" return icxx"new int;"
+    elseif type_str == "STEREOSAMPLE" return icxx"new StereoSample;"
+    elseif type_str == "VECTOR_REAL" return icxx"new vector<Real>;"
+    elseif type_str == "VECTOR_INTEGER" return icxx"new vector<int>;"
+    elseif type_str == "VECTOR_COMPLEX" return icxx"new vector<complex<Real> >;"
+    elseif type_str == "VECTOR_STRING" return icxx"new vector<string>;"
+    elseif type_str == "VECTOR_STEREOSAMPLE" return icxx"new vector<StereoSample>;"
+    elseif type_str == "VECTOR_VECTOR_REAL" return icxx"new vector<vector<Real> >;"
+    elseif type_str == "VECTOR_VECTOR_COMPLEX" return icxx"new vector<vector<complex<Real> > >;"
+    elseif type_str == "VECTOR_VECTOR_STRING" return icxx"new vector<vector<string> >;"
+    # elseif type_str == "TENSOR_REAL" return icxx"new Tensor<Real>();"
+    elseif type_str == "MATRIX_REAL" return icxx"new TNT::Array2D<Real>;"
+    # elseif type_str == "POOL" return icxx"new Pool;"
+    end
 end
 
 """
@@ -131,7 +132,7 @@ function julia2es(d::T) where T
         elseif T.parameters[2] == 2
             return convert(EssentiaMatrix{K}, d)
         end
-    else 
+    else
         return d
     end
 end

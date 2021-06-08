@@ -52,3 +52,4 @@ type conversion.
 * build script
 * tests and examples
 * release
+* improve type-coherence during conversion (e.g. `getCppObjPtr`)

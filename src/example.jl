@@ -26,8 +26,16 @@ end
 audio = rand(sr*dur)
 ws = 2048
 hs = 1024
+
+# creating an algorithm
 spec = Algorithm("Spectrum", "size" => 2048)
 mel = Essentia.Algorithm("MelBands")
-_spectrogram = roll(Float32, x -> jj(mel(spec("spectrum" => x)))["bands"], audio, ws, hs)
+
+# running on a frame:
+frame = @view audio[1:ws]
+spec("frame" => frame)
+
+# # running composition of algos on a full audio array
+# _spectrogram = roll(Float32, x -> jj(mel("spectrum" => spec("frame" => x)))["bands"], audio, ws, hs)
 # spectrogram = hcat(_spectrogram...)
 end # module
