@@ -57,11 +57,20 @@ git-tree-sha1 = "9d4f64f79012636741cf01133158a54b24924c32"
 uuid = "ffbed154-4ef7-542d-bbb7-c09d3a79fcae"
 version = "0.8.4"
 
+[[FileWatching]]
+uuid = "7b1f6079-737a-58dc-b8bc-7a2ca5c1b5ee"
+
 [[Highlights]]
 deps = ["DocStringExtensions", "InteractiveUtils", "REPL"]
 git-tree-sha1 = "f823a2d04fb233d52812c8024a6d46d9581904a4"
 uuid = "eafb193a-b7ab-5a9e-9068-77385905fa72"
 version = "0.4.5"
+
+[[Infiltrator]]
+deps = ["REPL"]
+git-tree-sha1 = "5157815de6905450fadc5260eeb8ee5c06e2e182"
+uuid = "5903a43b-9cc3-4c30-8d17-598619ec4e9b"
+version = "1.0.1"
 
 [[InteractiveUtils]]
 deps = ["Markdown"]
@@ -94,6 +103,12 @@ uuid = "8f399da3-3557-5675-b5ff-fb832c97cbdb"
 [[Logging]]
 uuid = "56ddb016-857b-54e1-b83d-db4d58db5568"
 
+[[LoweredCodeUtils]]
+deps = ["JuliaInterpreter"]
+git-tree-sha1 = "4bfb8b57df913f3b28a6bd3bdbebe9a50538e689"
+uuid = "6f1432cf-f94c-5a45-995e-cdbf5db27b0b"
+version = "2.1.0"
+
 [[Markdown]]
 deps = ["Base64"]
 uuid = "d6f4376e-aef5-505a-96c1-9c027394607a"
@@ -103,6 +118,11 @@ deps = ["Crayons", "JLFzf", "Markdown", "Pkg", "Printf", "REPL", "Tokenize"]
 git-tree-sha1 = "646c8cf453f25f12115ee09d57ca192c9af00618"
 uuid = "5fb14364-9ced-5910-84b2-373655c76a03"
 version = "0.5.10"
+
+[[OrderedCollections]]
+git-tree-sha1 = "85f8e6578bf1f9ee0d11e7bb1b1456435479d47c"
+uuid = "bac558e1-5e72-5ebc-8fee-abe8a469f55d"
+version = "1.4.1"
 
 [[PatModules]]
 git-tree-sha1 = "90fd5401d9b8a0aa9513e296224356a88fec979b"
@@ -135,6 +155,18 @@ uuid = "3fa0cd96-eef1-5676-8a61-b3b8758bbffb"
 [[Random]]
 deps = ["Serialization"]
 uuid = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
+
+[[Requires]]
+deps = ["UUIDs"]
+git-tree-sha1 = "4036a3bd08ac7e968e27c203d45f5fff15020621"
+uuid = "ae029012-a4dd-5104-9daa-d747884805df"
+version = "1.1.3"
+
+[[Revise]]
+deps = ["CodeTracking", "Distributed", "FileWatching", "JuliaInterpreter", "LibGit2", "LoweredCodeUtils", "OrderedCollections", "Pkg", "REPL", "Requires", "UUIDs", "Unicode"]
+git-tree-sha1 = "2b95c41e53c8f429ef56de5c3718f01831141751"
+uuid = "295af30f-e4ad-537b-8983-00126c2a3abe"
+version = "3.1.16"
 
 [[SHA]]
 uuid = "ea8e919c-243c-51af-8825-aaa63cd721ce"

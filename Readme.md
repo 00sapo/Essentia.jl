@@ -8,10 +8,11 @@ Julia bindings around Essentia C++ library for Music Information Retrieval
 * Standard algorithms
 * Streaming algorithms (not tested, though)
 * Audio in stereo are converted to and from Matrices with 2 columns
-* C++ to Julia vectors of numbers with no-copy (the inverse is not possible
-    because of C++ vector implementation)
+* Conversion C++ vectors -> Julia vectors of numbers with no-copy (the inverse
+    is not possible because of C++ vector implementation)
 * You can still create and pass C++ data by using `icxx` and `cxx` macros to
     avoid data copy
+* Composition of functions with no-copy between input-output
 
 ## Missing
 
@@ -23,6 +24,19 @@ Julia bindings around Essentia C++ library for Music Information Retrieval
     hz = icxx"essentia::mel2hz($a)"
     ```
 * Algorithms which need the `Tensor` and `Pool` types
+
+## Usage
+
+```julia
+```
+
+## Conversion table
+
+You can simply use the Essentia
+[documentation](https://essentia.upf.edu/reference/) and refer to this table for
+type conversion.
+
+[TODO]
 
 ## Installing
 

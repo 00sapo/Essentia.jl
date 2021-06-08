@@ -1,5 +1,3 @@
-using Cxx
-using Libdl
 # Open library (~ compiler flags)
 essentia_path = joinpath(@__DIR__, "..", "essentia")
 Libdl.dlopen(joinpath(essentia_path, "build", "src", "libessentia.so"), Libdl.RTLD_GLOBAL)

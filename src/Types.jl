@@ -1,3 +1,5 @@
+export EssentiaTuple, EssentiaVector, EssentiaFactory, EssentiaComplex, EssentiaMatrix
+
 const EssentiaVector{T, N} = cxxt"vector<$T>"{N} where {T, N}
 const EssentiaTuple{T, N} = cxxt"Tuple2<$T>"{N} where {T, N}
 const EssentiaMatrix{T, N} = cxxt"TNT::Array2D<$T>"{N} where {T, N}
