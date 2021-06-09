@@ -42,11 +42,15 @@ for type in ["standard", "streaming"]
         # \$var is interpolated at runtime
         fn = Meta.parse("""
             function $(type)_factory(name::String, params::Vararg{Pair{String}, $i})
-                return icxx\"\"\"
-                $type::AlgorithmFactory& factory = $type::AlgorithmFactory::instance();
-                $type::Algorithm* algo = factory.create(\$name $(_params2cppcode(i)));
-                return algo;
-                \"\"\"
+                try
+                    return icxx\"\"\"
+                        $type::AlgorithmFactory& factory = $type::AlgorithmFactory::instance();
+                        $type::Algorithm* algo = factory.create(\$name $(_params2cppcode(i)));
+                        return algo;
+                    \"\"\"
+                catch exception
+                    throw(EssentiaException("Cannot create Algorithm \$name"))
+                end
             end
         """)
         eval(fn)
@@ -132,20 +136,30 @@ function (self::Algorithm)(
     for (i, name) in enumerate(outputNames)
         # instantiate a pointer to the correct Essentia type
         output_type = outputTypes[i - 1]
-        v = getCppObjPtr(output_type)
-        icxx"$(self.algo)->output($name).set(*$v);"
-        # do we need the pointer here?
-        outputs[i] = unsafe_string(name) => (icxx"*$v;", output_type)
+        setCppOutput!(outputs, self.algo, name, output_type, i)
     end
     # compute
-    icxx"$(self.algo)->compute();"
+    # catch Essentia exception and rethrow them in our structure
+    exc = unsafe_string(icxx"""try {
+        $(self.algo)->compute();
+    } catch (const std::exception &exc) {
+        return std::string(exc.what());
+    }
+    return std::string("");
+    """)
+
     # disable GC
     GC.enable(true)
+
+    if exc != ""
+        # throw the exception
+        throw(EssentiaException(exc))
+    end
     # return
     return outputs, outputTypes
 end
 
-function (self::Algorithm)(inputs::Tuple{Vector{Pair{String, T}}, Vector{V}}) where {T, V}
+function (self::Algorithm)(inputs::Tuple{Vector{Pair}, V}) where V
     return self(inputs[1]...)
 end
 
@@ -154,14 +168,15 @@ Takes the output of an Algorithm and converts them to Julia dictionary with:
     * keys are strings with the names in Essentia documentation 
     * values are Julia objects
 """
-function jj(objects::Tuple{Vector{Pair{String, T}}, Vector{V}})::Dict{String, T} where {T, V}
-    out = Dict{String, T}()
+function jj(objects::Tuple{Vector{Pair}, V})::Dict where V
+    out = Dict{String, Any}()
     for i in 1:length(objects[1])
         k, v = objects[1][i]
-        type_info = objects[2][i]
-        # do we need a pointer here?
-        out[k] = es2julia(Ptr(v), typeInfoToStr(type_info))
+        type_info = objects[2][i-1]
+        # do we need a pointer here? yes
+        out[k] = es2julia(icxx"&$v;", typeInfoToStr(type_info))
     end
+    return out
 end
 
 """

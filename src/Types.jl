@@ -41,30 +41,60 @@ function typeInfoToStr(type_info_ptr)::String
 end
 
 """
-Given a `type_info` C++ structure, allocates the corresponding object and return a pointer to it
-
-This function is NOT type-coherent!
+Given a `type_info` C++ structure, allocates the corresponding object and set the output of `algo`
 """
-function getCppObjPtr(type_info)
+function setCppOutput!(outputs, algo, name, type_info, i)
     type_str = typeInfoToStr(type_info)
     # almost copied from
     # https://github.com/MTG/essentia/blob/master/src/python/pyalgorithm.cpp#L284
-    if type_str == "REAL" return icxx"new Real;"
-    elseif type_str == "STRING" return icxx"new string;"
-    elseif type_str == "BOOL" return icxx"new bool;"
-    elseif type_str == "INTEGER" return icxx"new int;"
-    elseif type_str == "STEREOSAMPLE" return icxx"new StereoSample;"
-    elseif type_str == "VECTOR_REAL" return icxx"new vector<Real>;"
-    elseif type_str == "VECTOR_INTEGER" return icxx"new vector<int>;"
-    elseif type_str == "VECTOR_COMPLEX" return icxx"new vector<complex<Real> >;"
-    elseif type_str == "VECTOR_STRING" return icxx"new vector<string>;"
-    elseif type_str == "VECTOR_STEREOSAMPLE" return icxx"new vector<StereoSample>;"
-    elseif type_str == "VECTOR_VECTOR_REAL" return icxx"new vector<vector<Real> >;"
-    elseif type_str == "VECTOR_VECTOR_COMPLEX" return icxx"new vector<vector<complex<Real> > >;"
-    elseif type_str == "VECTOR_VECTOR_STRING" return icxx"new vector<vector<string> >;"
-    # elseif type_str == "TENSOR_REAL" return icxx"new Tensor<Real>();"
-    elseif type_str == "MATRIX_REAL" return icxx"new TNT::Array2D<Real>;"
+    if type_str == "REAL"
+        v = icxx"Real* v = new Real(); $algo->output($name).set(*v);*v;"
+        outputs[i] = unsafe_string(name) => v
+    elseif type_str == "STRING" 
+        v = icxx"string* v = new string(); $algo->output($name).set(*v);*v;"
+        outputs[i] = unsafe_string(name) => v
+    elseif type_str == "BOOL" 
+        v = icxx"bool* v = new bool(); $algo->output($name).set(*v);*v;"
+        outputs[i] = unsafe_string(name) => v
+    elseif type_str == "INTEGER" 
+        v = icxx"int* v = new int(); $algo->output($name).set(*v);*v;"
+        outputs[i] = unsafe_string(name) => v
+    elseif type_str == "STEREOSAMPLE" 
+        v = icxx"StereoSample* v = new StereoSample(); $algo->output($name).set(*v);*v;"
+        outputs[i] = unsafe_string(name) => v
+    elseif type_str == "VECTOR_REAL" 
+        v = icxx"vector<Real>* v = new vector<Real>(); $algo->output($name).set(*v);*v;"
+        outputs[i] = unsafe_string(name) => v
+    elseif type_str == "VECTOR_INTEGER" 
+        v = icxx"vector<int>* v = new vector<int>(); $algo->output($name).set(*v);*v;"
+        outputs[i] = unsafe_string(name) => v
+    elseif type_str == "VECTOR_COMPLEX" 
+        v = icxx"vector<complex<Real> >* v = new vector<complex<Real> >(); $algo->output($name).set(*v);*v;"
+        outputs[i] = unsafe_string(name) => v
+    elseif type_str == "VECTOR_STRING" 
+        v = icxx"vector<string>* v = new vector<string>(); $algo->output($name).set(*v);*v;"
+        outputs[i] = unsafe_string(name) => v
+    elseif type_str == "VECTOR_STEREOSAMPLE" 
+        v = icxx"vector<StereoSample>* v = new vector<StereoSample>(); $algo->output($name).set(*v);*v;"
+        outputs[i] = unsafe_string(name) => v
+    elseif type_str == "VECTOR_VECTOR_REAL" 
+        v = icxx"vector<vector<Real> >* v = new vector<vector<Real> >(); $algo->output($name).set(*v);*v;"
+        outputs[i] = unsafe_string(name) => v
+    elseif type_str == "VECTOR_VECTOR_COMPLEX" 
+        v = icxx"vector<vector<complex<Real> > >* v = new vector<vector<complex<Real> > >(); $algo->output($name).set(*v);*v;"
+        outputs[i] = unsafe_string(name) => v
+    elseif type_str == "VECTOR_VECTOR_STRING" 
+        v = icxx"vector<vector<string> >* v = new vector<vector<string> >(); $algo->output($name).set(*v);*v;"
+        outputs[i] = unsafe_string(name) => v
+    # elseif type_str == "TENSOR_REAL" 
+    #     v = icxx"Tensor<Real>()* v = new Tensor<Real>()(); $algo->output($name).set(*v);*v;"
+    #     outputs[i] = unsafe_string(name) => v
+    elseif type_str == "MATRIX_REAL" 
+        v = icxx"TNT::Array2D<Real>* v = new TNT::Array2D<Real>(); $algo->output($name).set(*v);*v;"
+        outputs[i] = unsafe_string(name) => v
     # elseif type_str == "POOL" return icxx"new Pool;"
+    #     v = icxx" $algo->output($name).set($v);v;"
+    #     outputs[i] = unsafe_string(name) => v
     end
 end
 
@@ -113,12 +143,12 @@ function julia2es(d::T) where T
         return convert(julia2es_number(T), d)
     elseif T <: Tuple
         return convert(EssentiaTuple{T.parameters[1]}, d)
-    elseif T <: Array
+    elseif T <: AbstractArray
         L = T.parameters[1]
         if L <: Number
             # a vector
             K = julia2es_number(L)
-        elseif L <: Tuple
+        elseif L <: AbstractTuple
             # a vector of tuples
             V = julia2es_number(L.parameters[1])
             return convert(EssentiaVector{EssentiaTuple{V}}, d)
@@ -253,3 +283,11 @@ Used internally.
 function Base.convert(::Type{Vector{T}}, x::EssentiaVector{T, K}) where {T<:Number, K}
     return unsafe_wrap(Vector{T}, icxx"$x.data();", icxx"$x.size();", own=true)
 end
+
+"""
+An exception for something that happens in Essentia 
+"""
+struct EssentiaException <: Exception
+    message::String
+end
+Base.showerror(io::IO, e::EssentiaException) = print(io, "Essentia exception: ", e.message)
