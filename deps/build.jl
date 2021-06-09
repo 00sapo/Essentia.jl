@@ -1,0 +1,5 @@
+cur_dir = pwd()
+cd(joinpath(@__DIR__, "..", "essentia"))
+run(`./waf configure`)
+run(`./waf`)
+cd(cur_dir)
