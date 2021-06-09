@@ -36,14 +36,17 @@ function main()
     mel = Algorithm("MelBands")
 
     # running on a frame:
+    println("Computing Spectrum on a frame...")
     frame = @view audio[1:ws]
-    windowed = win("frame" => frame)
+    windowed = win(frame)
     spectrum = spec(windowed)
     melbands = mel(spectrum)
 
     # running composition of algos on a full audio array
-    _spectrogram = roll(Vector{Float32}, x -> jj(mel(spec(win("frame" => x))))["bands"], audio, ws, hs)
+    println("Computing Mel-spectrogram...")
+    _spectrogram = roll(Vector{Float32}, x -> jj(mel(spec(win(x))))["bands"], audio, ws, hs)
     spectrogram = hcat(_spectrogram...)
+    println("Plotting...")
     gr()
     p1 = Plots.plot(jj(spectrum)["spectrum"])
     p2 = Plots.plot(jj(melbands)["bands"])

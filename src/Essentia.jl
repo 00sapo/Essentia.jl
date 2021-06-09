@@ -3,7 +3,6 @@ module Essentia
 __precompile__(false)
 using Cxx
 using Libdl
-using Infiltrator
 include("Init.jl")
 include("Types.jl")
 
@@ -82,6 +81,8 @@ end
         self::Algorithm)(inputs::Pair{String, T}...
     ) where T
 
+    function (self::Algorithm)(inputs::T...) where T
+
     function (
         self::Algorithm)(inputs::Tuple{Vector{Pair{String, T}}, Vector{V}}
     ) where T
@@ -94,6 +95,17 @@ Executes the algorithm. Note that while this function is running, the garbage-co
     * keys must be strings with the same name as the Essentia
     [documentation](https://essentia.upf.edu/reference/) 
     * values are C++ or Julia objects
+
+OR
+
+* a variadic number of C++ or Julia objects in the same order as Essentia documentation
+
+OR
+
+* [meant to be used internally] a `Tuple{Vector{Pairs{String, T}}, Vector{V}}` where:
+    * pair keys are strings with the same name as Essentia documentation 
+    * pair values are C++ objects
+    * `V` is a type descriptor
 
 ## Returns
 
@@ -110,7 +122,10 @@ function (self::Algorithm)(
     # disable GC
     GC.enable(false)
     if length(inputs) != self.ninp
-        error("Essentia " * self.name * "algorithm needs $(self.ninp) inputs, but receivs $(length(inputs))")
+        throw(EssentiaException(
+            "Essentia " *
+                self.name *
+                    "algorithm needs $(self.ninp) inputs, but received $(length(inputs))"))
     end
     # connect inputs
     # need inputTypes for StereoSample...
@@ -163,8 +178,14 @@ function (self::Algorithm)(inputs::Tuple{Vector{Pair}, V}) where V
     return self(inputs[1]...)
 end
 
+function (self::Algorithm)(inputs::Union{AbstractArray{T}, K}...) where {K <: Number, T}
+    Main.@bp
+    inputNames = icxx"vector<string> inputNames = $(self.algo)->inputNames(); inputNames;"
+    self((unsafe_string(n) => inputs[i] for (i, n) in enumerate(inputNames))...)
+end
+
 """
-Takes the output of an Algorithm and converts them to Julia dictionary with:
+Takes the output of an Algorithm and converts them to Julia dictionary so that:
     * keys are strings with the names in Essentia documentation 
     * values are Julia objects
 """

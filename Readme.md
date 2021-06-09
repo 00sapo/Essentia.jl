@@ -3,6 +3,41 @@ Essentia.jl
 
 Julia bindings around Essentia C++ library for Music Information Retrieval
 
+## Usage
+
+To create an algorithm, just call `Algorithm` functor with parameters in Pair
+fashion:
+```julia
+windowing_algo = Algorithm("Windowing", "type" => "hamming", "size" => ws)
+```
+
+To run it, you have two options:
+
+* key-value definition of inputs:
+    ```julia 
+    windowed = windowing_algo("frame" => a_vector_of_real)
+    ```
+* just the inputs in the same order as Essentia docs:
+    ```julia 
+    windowed = windowing_algo(a_vector_of_real)
+    ```
+
+Actually, there's a third way of passing inputs, but it's meant to be used
+internally to avoid copies while composing algorithms. In the examples above,
+`windowed` is a `Tuple` containing two C++ objects, the first being the output
+and the second being a type descriptor. You can call an algorithm with this
+tuple as input
+    ```julia
+    windowing_algo = Algorithm("Windowing", "type" => "hamming", "size" => ws)
+    spec = Algorithm("Spectrum", "size" => ws)
+    windowed = windowing_algo(a_vector_of_real)
+    spectrum = spec(windowed)
+    ```
+
+To get the output inside a Julia object, just use the function `jj`.
+
+See `src.example.jl` for a full example.
+
 ## Done
 
 * Standard algorithms
@@ -12,7 +47,7 @@ Julia bindings around Essentia C++ library for Music Information Retrieval
     is not possible because of C++ vector implementation)
 * You can still create and pass C++ data by using `icxx` and `cxx` macros to
     avoid data copy
-* Composition of functions with no-copy between input-output
+* Composition of functions except for input/output of each call
 
 ## Missing
 
@@ -25,10 +60,6 @@ Julia bindings around Essentia C++ library for Music Information Retrieval
     ```
 * Algorithms which need the `Tensor` and `Pool` types
 
-## Usage
-
-```julia
-```
 
 ## Conversion table
 
@@ -36,7 +67,18 @@ You can simply use the Essentia
 [documentation](https://essentia.upf.edu/reference/) and refer to this table for
 type conversion.
 
-[TODO]
+| Julia          | Essentia Docs        |
+|----------------|----------------------|
+| Float32        | Real                 |
+| Int32          | Integer              |
+| Complex        | Complex              |
+| String         | String               |
+| Bool           | Bool                 |
+| Vector         | Vector               |
+| Vector{Vector} | Vector_Vector        |
+| Matrix         | Matrix               |
+| Tuple          | StereoSample         |
+| Matrix         | Vector{StereoSample} |
 
 ## Installing
 
@@ -50,6 +92,5 @@ type conversion.
 # TODO
 
 * build script
-* tests and examples
+* tests
 * release
-* improve type-coherence during conversion (e.g. `getCppObjPtr`)
