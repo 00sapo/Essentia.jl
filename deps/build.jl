@@ -1,6 +1,6 @@
 cur_dir = pwd()
 cd(joinpath(@__DIR__, ".."))
-run(`git submodule update --init --recursive`)
+run(`git submodule update --init`)
 cd("essentia")
 run(`./waf configure`)
 run(`./waf`)
