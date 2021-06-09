@@ -111,6 +111,8 @@ Pkg.add("https://github.com/00sapo/Essentia.jl.git")
 
 * The package cannot be pre-compiled. As such, it is compiled at the first
     import in your code.
+* Cannot automatically compile the module because of the linking problem; as
+    consequence, cannot use github actions or CI systems
 
 # TODO
 
