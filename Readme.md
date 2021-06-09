@@ -3,6 +3,10 @@ Essentia.jl
 
 Julia bindings around Essentia C++ library for Music Information Retrieval
 
+[Docs](https://00sapo.github.io/Essentia.jl/build/) are temporarily built
+off-line until issues with linking against Julia's libstdc++ are fixed.
+
+
 ## Usage
 
 To create an algorithm, just call `Algorithm` functor with parameters in Pair
@@ -50,7 +54,8 @@ spectrogram = rollup(
 
 You can get more custom paddings by using the `PaddedViews` package.
 
-See `src.example.jl` for a full example.
+See `src/example.jl` and [docs](https://00sapo.github.io/Essentia.jl/build/) for more info.
+
 
 ## Type Conversion table
 
