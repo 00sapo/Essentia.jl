@@ -57,25 +57,6 @@ for type in ["standard", "streaming"]
     end
 end
 
-struct Algorithm{T}
-    name::String
-    type::String
-    algo::T
-    ninp::Int32
-    nout::Int32
-    function Algorithm(name, params...; type="standard")
-        if type == "standard"
-            algo = standard_factory(name, params...)
-        elseif type == "streaming"
-            algo = streaming_factory(name, params...)
-        else 
-            error("Only `streaming` or `standard` accepted as Algorithm types")
-        end
-        ninp = icxx"""$algo->inputs().size();"""
-        nout = icxx"""$algo->outputs().size();"""
-        new{typeof(algo)}(name, type, algo, ninp, nout)
-    end
-end
 
 """
     function (
@@ -117,6 +98,26 @@ OR
 
 Use `jj` function or macro to get a dictionary of Julia objects
 """
+struct Algorithm{T}
+    name::String
+    type::String
+    algo::T
+    ninp::Int32
+    nout::Int32
+    function Algorithm(name, params...; type="standard")
+        if type == "standard"
+            algo = standard_factory(name, params...)
+        elseif type == "streaming"
+            algo = streaming_factory(name, params...)
+        else 
+            error("Only `streaming` or `standard` accepted as Algorithm types")
+        end
+        ninp = icxx"""$algo->inputs().size();"""
+        nout = icxx"""$algo->outputs().size();"""
+        new{typeof(algo)}(name, type, algo, ninp, nout)
+    end
+end
+
 function (self::Algorithm)(
     inputs::Pair{String, T}...) where T
 

@@ -2,9 +2,6 @@
 
 Documentation for Essentia.jl
 
- ```@docs
- Essentia
- ```
 ## Module Index
 
 ```@index

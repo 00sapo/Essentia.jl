@@ -71,17 +71,17 @@ type conversion.
 
 ## Installing
 
-```julia
-Using Pkg
-Pkg.add("https://github.com/00sapo/Essentia.jl.git")
-```
-
 * This package is based on `Cxx.jl`, and as consequence, it currently supports Julia from 1.0.x to 1.3.x.
 * Julia `libstdc++.so` is not up-to-date with some OS (e.g. Manjaro Linux); you
     will need to symlink the Julia library (`<julia_dir>/lib/julia/libstdc++.so.6`) to the system one.
     This could be avoided if I manage to let Essentia compile with a specific
     `libstdc++.so`
 * `export JULIA_CXX_RTTI="1"` must be set before compiling Cxx...
+
+```julia
+Using Pkg
+Pkg.add("https://github.com/00sapo/Essentia.jl.git")
+```
 
 ## Done
 
