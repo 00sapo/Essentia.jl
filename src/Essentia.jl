@@ -6,7 +6,7 @@ using Libdl
 include("Init.jl")
 include("Types.jl")
 
-export Algorithm, jj, @jj
+export Algorithm, jj
 
 """
     function standard_factory(name::String, params::Vararg{Pair{Symbol}, i})
@@ -179,7 +179,6 @@ function (self::Algorithm)(inputs::Tuple{Vector{Pair}, V}) where V
 end
 
 function (self::Algorithm)(inputs::Union{AbstractArray{T}, K}...) where {K <: Number, T}
-    Main.@bp
     inputNames = icxx"vector<string> inputNames = $(self.algo)->inputNames(); inputNames;"
     self((unsafe_string(n) => inputs[i] for (i, n) in enumerate(inputNames))...)
 end
@@ -198,17 +197,6 @@ function jj(objects::Tuple{Vector{Pair}, V})::Dict where V
         out[k] = es2julia(icxx"&$v;", typeInfoToStr(type_info))
     end
     return out
-end
-
-"""
-Same as function `jj`, but in macro style
-
-        TODO: fix this
-"""
-macro jj(expr)
-    quote
-        jj($expr)
-    end
 end
 
 end # module

@@ -38,30 +38,7 @@ To get the output inside a Julia object, just use the function `jj`.
 
 See `src.example.jl` for a full example.
 
-## Done
-
-* Standard algorithms
-* Streaming algorithms (not tested, though)
-* Audio in stereo are converted to and from Matrices with 2 columns
-* Conversion C++ vectors -> Julia vectors of numbers with no-copy (the inverse
-    is not possible because of C++ vector implementation)
-* You can still create and pass C++ data by using `icxx` and `cxx` macros to
-    avoid data copy
-* Composition of functions with no-copy except for input/output of each call
-
-## Missing
-
-* Functions in `essentia` namespace; however you can do:
-    ```julia
-    using Cxx
-    using Essentia
-    mel = 24.5
-    hz = icxx"essentia::mel2hz($a)"
-    ```
-* Algorithms which need the `Tensor` and `Pool` types
-
-
-## Conversion table
+## Type Conversion table
 
 You can simply use the Essentia
 [documentation](https://essentia.upf.edu/reference/) and refer to this table for
@@ -88,6 +65,33 @@ type conversion.
     This could be avoided if I manage to let Essentia compile with a specific
     `libstdc++.so`
 * `export JULIA_CXX_RTTI="1"` must be set before compiling Cxx...
+
+## Done
+
+* Standard algorithms
+* Streaming algorithms (not tested, though)
+* Audio in stereo are converted to and from Matrices with 2 columns
+* Conversion C++ vectors -> Julia vectors of numbers with no-copy (the inverse
+    is not possible because of C++ vector implementation)
+* You can still create and pass C++ data by using `icxx` and `cxx` macros to
+    avoid data copy
+* Composition of functions with no-copy except for input/output of each call
+
+## Missing
+
+* Functions in `essentia` namespace; however you can do:
+    ```julia
+    using Cxx
+    using Essentia
+    mel = 24.5
+    hz = icxx"essentia::mel2hz($a)"
+    ```
+* Algorithms which need the `Tensor` and `Pool` types
+
+## Issues
+
+* The package cannot be pre-compiled. As such, it is compiled at the first
+    import in your code.
 
 # TODO
 
