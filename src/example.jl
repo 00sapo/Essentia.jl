@@ -2,24 +2,6 @@ module Example
 using Essentia
 using Plots
 
-"""
-Execute a function a frames
-
-    preallocate array
-TODO: add padding, centered and reshaping output
-"""
-function roll(::Type{T}, fn::Function, z::AbstractArray, ws, hs) where {T}
-    L = length(z)-ws+1
-    out = Vector{T}(undef, 0)
-    for i in 1:hs:L
-        e =  (@view z[i:i+ws-1]) 
-        # out[i] = fn(e)
-        push!(out, fn(e))
-    end
-    return out
-end
-
-using Infiltrator
 function main()
     # 300 seconds
     dur = 300
@@ -44,8 +26,7 @@ function main()
 
     # running composition of algos on a full audio array
     println("Computing Mel-spectrogram...")
-    _spectrogram = roll(Vector{Float32}, x -> jj(mel(spec(win(x))))["bands"], audio, ws, hs)
-    spectrogram = hcat(_spectrogram...)
+    spectrogram = rollup(Vector{Float32}, x -> jj(mel(spec(win(x))))["bands"], audio, ws, hs)
     println("Plotting...")
     gr()
     p1 = Plots.plot(jj(spectrum)["spectrum"])

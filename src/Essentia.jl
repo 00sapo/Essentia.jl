@@ -5,8 +5,9 @@ using Cxx
 using Libdl
 include("Init.jl")
 include("Types.jl")
+include("Utils.jl")
 
-export Algorithm, jj
+export Algorithm
 
 """
     function standard_factory(name::String, params::Vararg{Pair{Symbol}, i})
@@ -181,22 +182,6 @@ end
 function (self::Algorithm)(inputs::Union{AbstractArray{T}, K}...) where {K <: Number, T}
     inputNames = icxx"vector<string> inputNames = $(self.algo)->inputNames(); inputNames;"
     self((unsafe_string(n) => inputs[i] for (i, n) in enumerate(inputNames))...)
-end
-
-"""
-Takes the output of an Algorithm and converts them to Julia dictionary so that:
-    * keys are strings with the names in Essentia documentation 
-    * values are Julia objects
-"""
-function jj(objects::Tuple{Vector{Pair}, V})::Dict where V
-    out = Dict{String, Any}()
-    for i in 1:length(objects[1])
-        k, v = objects[1][i]
-        type_info = objects[2][i-1]
-        # do we need a pointer here? yes
-        out[k] = es2julia(icxx"&$v;", typeInfoToStr(type_info))
-    end
-    return out
 end
 
 end # module

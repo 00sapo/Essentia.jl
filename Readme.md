@@ -34,6 +34,18 @@ windowed = windowing_algo(a_vector_of_real)
 spectrum = spec(windowed)
 ```
 
+For computing spectrograms, a `rollup` function is provided, which executes a
+custom function on all the frames extracted from an array:
+```julia
+ws = 2048
+hs = 1024
+win = Algorithm("Windowing", "type" => "hamming", "size" => ws)
+spec = Algorithm("Spectrum", "size" => ws)
+
+spectrogram = rollup(
+    Vector{Float32}, x -> jj(spec(win(x)))["spectrum"], audio, ws, hs, padding="minimum", padding_fill=0)
+```
+
 To get the output inside a Julia object, just use the function `jj`.
 
 See `src.example.jl` for a full example.
