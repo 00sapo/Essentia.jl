@@ -2,10 +2,6 @@ module Example
 using Essentia
 using Plots
 
-# 300 seconds
-dur = 300
-sr = 44100
-
 """
 Execute a function a frames
 
@@ -25,6 +21,10 @@ end
 
 using Infiltrator
 function main()
+    # 300 seconds
+    dur = 300
+    sr = 44100
+
     # a random vector as audio
     audio = rand(sr*dur)
     ws = 2048
