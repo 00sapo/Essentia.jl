@@ -26,13 +26,13 @@ Actually, there's a third way of passing inputs, but it's meant to be used
 internally to avoid copies while composing algorithms. In the examples above,
 `windowed` is a `Tuple` containing two C++ objects, the first being the output
 and the second being a type descriptor. You can call an algorithm with this
-tuple as input
-    ```julia
-    windowing_algo = Algorithm("Windowing", "type" => "hamming", "size" => ws)
-    spec = Algorithm("Spectrum", "size" => ws)
-    windowed = windowing_algo(a_vector_of_real)
-    spectrum = spec(windowed)
-    ```
+tuple as input:
+```julia
+windowing_algo = Algorithm("Windowing", "type" => "hamming", "size" => ws)
+spec = Algorithm("Spectrum", "size" => ws)
+windowed = windowing_algo(a_vector_of_real)
+spectrum = spec(windowed)
+```
 
 To get the output inside a Julia object, just use the function `jj`.
 
@@ -47,7 +47,7 @@ See `src.example.jl` for a full example.
     is not possible because of C++ vector implementation)
 * You can still create and pass C++ data by using `icxx` and `cxx` macros to
     avoid data copy
-* Composition of functions except for input/output of each call
+* Composition of functions with no-copy except for input/output of each call
 
 ## Missing
 
