@@ -3,8 +3,9 @@ Essentia.jl
 
 Julia bindings around Essentia C++ library for Music Information Retrieval
 
-[Docs](https://00sapo.github.io/Essentia.jl/build/) are temporarily built
-off-line until issues with linking against Julia's libstdc++ are fixed.
+* [Documentation of Julia API](https://00sapo.github.io/Essentia.jl/build/)
+* [Documentation of Python API (for Algorithms)](https://essentia.upf.edu/reference//)
+* [Documentation of C++ API](https://essentia.upf.edu/doxygen/)
 
 
 ## Usage
