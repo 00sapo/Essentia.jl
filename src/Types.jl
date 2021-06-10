@@ -33,7 +33,7 @@ function typeInfoToStr(type_info_ptr)::String
       // if (essentia::sameType($tp, typeid(std::vector<essentia::Tensor<essentia::Real> >)))return $("VECTOR_TENSOR_REAL");
       if (essentia::sameType($tp, typeid(TNT::Array2D<essentia::Real>)))return $("MATRIX_REAL");
       if (essentia::sameType($tp, typeid(std::vector<TNT::Array2D<essentia::Real> >)))return $("VECTOR_MATRIX_REAL");
-      // if (essentia::sameType($tp, typeid(essentia::Pool)))return $("POOL");
+      if (essentia::sameType($tp, typeid(essentia::Pool)))return $("POOL");
      return $("UNDEFINED");
     """
     # at now, Cxx cannot return strings... so creating the string in Julia and
@@ -96,9 +96,9 @@ function setCppOutput!(outputs, algo, name, type_info, i)
     elseif type_str == "MATRIX_REAL" 
         v = icxx"TNT::Array2D<Real>* v = new TNT::Array2D<Real>(); $algo->output($name).set(*v);*v;"
         outputs[i] = unsafe_string(name) => v
-    # elseif type_str == "POOL" return icxx"new Pool;"
-    #     v = icxx" $algo->output($name).set($v);v;"
-    #     outputs[i] = unsafe_string(name) => v
+    elseif type_str == "POOL"
+        v = icxx"Pool* v = new Pool(); $algo->output($name).set(*v);*v;"
+        outputs[i] = unsafe_string(name) => v
     end
 end
 
@@ -133,9 +133,12 @@ function es2julia(d::T, type_str::String) where T
 end
 
 """
-    function julia2es_number(n::Type)
+    function julia2es(d::T) where T
 
-Perform conversion from Julia to Essentia types
+Perform conversion from Julia to Essentia types.
+
+Note that in essentia, strings are threated as `std::string`, while `icxx` converts
+them; for this reason, you need to use this function to deal with Essentia's strings.
 
 The return type changes according to `T`, so this function is type coherent
 """
@@ -170,6 +173,8 @@ function julia2es(d::T) where T
         elseif T.parameters[2] == 2
             return convert(EssentiaMatrix{K}, d)
         end
+    elseif T <: AbstractString
+        return icxx"std::string v($d); v;"
     else
         return d
     end

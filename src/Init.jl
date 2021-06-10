@@ -5,12 +5,14 @@ Cxx.addHeaderDir(joinpath(essentia_path, "src"), kind=C_System)
 
 # includes
 cxxinclude("essentia/algorithmfactory.h")
+cxxinclude("essentia/pool.h")
 
 # using namespaces...
 cxx"""
 using namespace std;
 using namespace essentia;
 using namespace essentia::standard;
+using namespace essentia::streaming;
 """
 
 # register algorithms

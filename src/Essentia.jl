@@ -196,7 +196,7 @@ function (self::Algorithm)(inputs::Tuple{Vector{Pair}, V}) where V
     return self(inputs[1]...)
 end
 
-function (self::Algorithm)(inputs::Union{AbstractArray{T}, K}...) where {K <: Number, T}
+function (self::Algorithm)(inputs::Union{AbstractArray{T}, Number, AbstractString}...) where T
     inputNames = icxx"vector<string> inputNames = $(self.algo)->inputNames(); inputNames;"
     self((unsafe_string(n) => inputs[i] for (i, n) in enumerate(inputNames))...)
 end

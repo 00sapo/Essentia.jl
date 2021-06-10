@@ -7,6 +7,10 @@ export rollup, jj
 Takes the output of an Algorithm and converts them to Julia dictionary so that:
     * keys are strings with the names in Essentia documentation 
     * values are Julia objects
+
+If no conversion is implemented, then the Cxx object wrapping the C++ type is
+returned. When working with `Pool`, expect to receive a Cxx object and to work
+with `icxx` macro.
 """
 function jj(objects::Tuple{Vector{Pair}, V})::Dict where V
     out = Dict{String, Any}()
