@@ -8,14 +8,17 @@ cd("essentia")
 try
     run(`./waf clean`)
 catch exc
-    println("canno clean an uncofigured project!")
+    println("cannot clean an uncofigured project!")
 end
 
-# downloading and building dependencies
-run(`./packaging/build_3rdparty_static_debian.sh`)
+# # downloading and building dependencies
+# run(`./packaging/build_3rdparty_static_debian.sh`)
 
-# configuring with static dependencies
-run(`./waf configure --static-dependencies`)
+# # configuring with static dependencies
+# run(`./waf configure --static-dependencies`)
+
+
+run(`./waf configure`)
 
 # compiling
 run(`./waf -v`)

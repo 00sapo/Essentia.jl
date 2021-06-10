@@ -81,16 +81,16 @@ type conversion.
 * This package is based on `Cxx.jl`, and as consequence, it currently supports
     Julia from 1.0.x to 1.3.x.
 
-* Julia `libstdc++.so` is not up-to-date with some updated OS
+* Julia 1.3.1 provides a `libstdc++.so` that is not up-to-date with some updated OS
     To avoid this problem, you can `export LD_PRELOAD=$(cc -print-file-name=libstdc++.so)`
     before of starting Julia.
 
-* The building script is only tested on Linux. You can try it on Mac and
-    Windows, but if you have issues, the solution is one of the following
-    * use Linux -- it's free
-    * really, use Linux, it's better
-    * create a fork of this repository, fix the `deps/build.jl` and make a pull
-        request
+* To build Essentia, it is recommended to [install the dependencies by
+    yourself](https://essentia.upf.edu/installing.html#installing-dependencies-on-linux)
+
+    Note for contributor: the build script provides a way to download and
+    statically compile the dependencies, but `AudioLoader` and similar
+    algorithms do not work...
 
 ```julia
 Using Pkg
