@@ -5,7 +5,11 @@ cur_dir = pwd()
 cd(joinpath(@__DIR__, ".."))
 run(`git submodule update --init`)
 cd("essentia")
-run(`./waf clean`)
+try
+    run(`./waf clean`)
+catch exc
+    println("canno clean an uncofigured project!")
+end
 
 # downloading and building dependencies
 run(`./packaging/build_3rdparty_static_debian.sh`)
