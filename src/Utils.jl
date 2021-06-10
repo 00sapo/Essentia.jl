@@ -2,6 +2,8 @@ using PaddedViews
 export rollup, jj
 
 """
+    function jj(objects::Tuple{Vector{Pair}, V})::Dict where V
+
 Takes the output of an Algorithm and converts them to Julia dictionary so that:
     * keys are strings with the names in Essentia documentation 
     * values are Julia objects
@@ -18,7 +20,13 @@ function jj(objects::Tuple{Vector{Pair}, V})::Dict where V
 end
 
 """
-    function rollup(::Type{T}, fn::Function, z::AbstractArray, ws, hs) where {T}
+    function rollup(::Type{T},
+                    fn::Function,
+                    z::AbstractArray{K},
+                    ws::Integer,
+                    hs::Integer,
+                    padding::String="minimum",
+                    padding_fill::K=0.0) where {T, K<:Number}
 
 Execute a function over frames extracted as views of an array
 
@@ -69,8 +77,6 @@ To get custom paddings, consider using the `PaddedViews` package.
 * else `Vector{T}`
 
 Each row is the output of a frame.
-
-TODO: add padding, centered
 """
 function rollup(::Type{T},
                 fn::Function,

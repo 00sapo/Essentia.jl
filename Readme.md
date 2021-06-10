@@ -78,17 +78,29 @@ type conversion.
 
 ## Installing
 
-* This package is based on `Cxx.jl`, and as consequence, it currently supports Julia from 1.0.x to 1.3.x.
-* Julia `libstdc++.so` is not up-to-date with some OS (e.g. Manjaro Linux); you
-    will need to symlink the Julia library (`<julia_dir>/lib/julia/libstdc++.so.6`) to the system one.
-    This could be avoided if I manage to let Essentia compile with a specific
-    `libstdc++.so`
-* `export JULIA_CXX_RTTI="1"` must be set before compiling Cxx...
+* This package is based on `Cxx.jl`, and as consequence, it currently supports
+    Julia from 1.0.x to 1.3.x.
+
+* Julia `libstdc++.so` is not up-to-date with some updated OS
+    To avoid this problem, you can `export LD_PRELOAD=$(cc -print-file-name=libstdc++.so)`
+    before of starting Julia.
+
+* The building script is only tested on Linux. You can try it on Mac and
+    Windows, but if you have issues, the solution is one of the following
+    * use Linux -- it's free
+    * really, use Linux, it's better
+    * create a fork of this repository, fix the `deps/build.jl` and make a pull
+        request
 
 ```julia
 Using Pkg
 Pkg.add("https://github.com/00sapo/Essentia.jl.git")
 ```
+
+## Notes
+
+* this package turns on RTTI by setting the environment variable
+    `JULIA_CXX_RTTI="1"` at when imported
 
 ## Done
 

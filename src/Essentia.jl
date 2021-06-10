@@ -1,6 +1,7 @@
 module Essentia
 # disable precompilation
 __precompile__(false)
+ENV["JULIA_CXX_RTTI"] = 1
 using Cxx
 using Libdl
 include("Init.jl")
@@ -9,21 +10,6 @@ include("Utils.jl")
 
 export Algorithm
 
-"""
-    function standard_factory(name::String, params::Vararg{Pair{Symbol}, i})
-    function streaming_factory(name::String, params::Vararg{Pair{Symbol}, i})
-
-* 1 ≤ i ≤ 30
-
-This function returns the algorithm `name` using `essentia::standard` or
-`essentia::streaming` depending on the name. Other arguments can
-be passed in a key-value fashion.
-
-## Example
-```julia
-Essentia.standard_factory("MFCC", :dctType=>3, :logType="natural")
-```
-"""
 
 function _params2cppcode(n::Integer)
     # params is here but it's actually an argument of the various factory
@@ -59,6 +45,36 @@ end
 
 
 """
+
+Functor representing an algorithm.
+
+---
+
+## Instantiating
+
+    function Algorithm(name, params...; type="standard")
+
+This function returns the algorithm `name` using `essentia::standard` or
+`essentia::streaming` depending on `type`. Other arguments can
+be passed in a key-value fashion.
+
+### Fields
+
+    name::String
+    type::String
+    algo::T
+    ninp::Int32
+    nout::Int32
+
+### Example
+```julia
+Essentia.Algorithm("MFCC", :dctType=>3, :logType="natural")
+```
+
+---
+
+## Running
+
     function (
         self::Algorithm)(inputs::Pair{String, T}...
     ) where T
@@ -71,11 +87,11 @@ end
 
 Executes the algorithm. Note that while this function is running, the garbage-collector is suspended!
 
-## Arguments
+### Arguments
 
 * a variadic number of pairs where:
     * keys must be strings with the same name as the Essentia
-    [documentation](https://essentia.upf.edu/reference/) 
+        [documentation](https://essentia.upf.edu/reference/) 
     * values are C++ or Julia objects
 
 OR
@@ -89,14 +105,14 @@ OR
     * pair values are C++ objects
     * `V` is a type descriptor
 
-## Returns
+### Returns
 
 * a `Tuple{Vector{Pairs{String, T}}, Vector{V}}` where:
     * pair keys are strings with the same name as Essentia documentation 
     * pair values are C++ objects
     * `V` is a type descriptor
 
-Use `jj` function or macro to get a dictionary of Julia objects
+Use `jj` function to get a dictionary of Julia objects
 """
 struct Algorithm{T}
     name::String

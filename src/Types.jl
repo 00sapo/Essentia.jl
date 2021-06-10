@@ -7,6 +7,8 @@ const EssentiaComplex{T, N} = cxxt"complex<$T>"{N} where {T, N}
 
 
 """
+    function typeInfoToStr(type_info_ptr)::String
+
 Given a `type_info *` C++ structure, returns a string which describes it (as Essentia Python bindings)
 """
 function typeInfoToStr(type_info_ptr)::String
@@ -41,6 +43,8 @@ function typeInfoToStr(type_info_ptr)::String
 end
 
 """
+    function setCppOutput!(outputs, algo, name, type_info, i)
+
 Given a `type_info` C++ structure, allocates the corresponding object and set the output of `algo`
 """
 function setCppOutput!(outputs, algo, name, type_info, i)
@@ -99,6 +103,8 @@ function setCppOutput!(outputs, algo, name, type_info, i)
 end
 
 """
+    function es2julia(d::T, type_str::String) where T
+
 Perform conversion from a C+ pointer to Julia according to the description in
 `type_str` (returned by `typeInfoToStr`)
 
@@ -127,6 +133,8 @@ function es2julia(d::T, type_str::String) where T
 end
 
 """
+    function julia2es_number(n::Type)
+
 Perform conversion from Julia to Essentia types
 
 The return type changes according to `T`, so this function is type coherent
@@ -285,6 +293,10 @@ function Base.convert(::Type{Vector{T}}, x::EssentiaVector{T, K}) where {T<:Numb
 end
 
 """
+    struct EssentiaException <: Exception
+        message::String
+    end
+
 An exception for something that happens in Essentia 
 """
 struct EssentiaException <: Exception
