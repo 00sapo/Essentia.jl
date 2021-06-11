@@ -48,11 +48,11 @@ catch exc
 end
 
 # downloading and building dependencies
-run(`./packaging/build_3rdparty_static_debian.sh`)
+run(`sh ./packaging/build_3rdparty_static_debian.sh`)
 
 # configuring with static dependencies
-run(`./waf configure --static-dependencies -v`)
+run(`python ./waf configure --static-dependencies -v`)
 
 # compiling
-run(`./waf -v`)
+run(`python ./waf -v`)
 cd(cur_dir)
