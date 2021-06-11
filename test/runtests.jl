@@ -12,11 +12,32 @@ using Essentia
         audio = rand(ws)
         windowed = win(audio)
         spectrum = spec(windowed)
-        @test typeof(win) <: Algorithm
-        @test typeof(windowed) <: Tuple
-        @test typeof(spectrum) <: Tuple
-        @testset "Essentia jj" begin
-            @test all(jj(spectrum)["spectrum"] .> 0)
+
+        @testset "algorithms" begin
+            @test typeof(win) <: Algorithm
+            @test typeof(windowed) <: Tuple
+            @test typeof(spectrum) <: Tuple
+        end
+
+        jj_spec = jj(spectrum)["spectrum"]
+        @testset "jj" begin
+            @test all(jj_spec .> 0)
+        end
+
+        # @testset "no-copy conversion" begin
+        #     jj_spec .= 0
+        #     jj_spec_new = jj(spectrum)["spectrum"]
+        #     @test all(jj_spec_new .== 0)
+        # end
+
+        @testset "Essentia Loader, Writer and Pool" begin
+            audio = rand(44100*10)
+            Algorithm(
+                "MonoWriter", "sampleRate"=>44100, "filename"=>"tmp.flac", "format"=>"flac")(audio)
+            @test isfile("tmp.flac")
+            out = jj(Algorithm("MusicExtractor")("tmp.flac")) 
+            @test typeof(out) <: Dict
+            rm("tmp.flac")
         end
     end
 

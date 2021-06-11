@@ -4,6 +4,41 @@ const EssentiaVector{T, N} = cxxt"vector<$T>"{N} where {T, N}
 const EssentiaTuple{T, N} = cxxt"Tuple2<$T>"{N} where {T, N}
 const EssentiaMatrix{T, N} = cxxt"TNT::Array2D<$T>"{N} where {T, N}
 const EssentiaComplex{T, N} = cxxt"complex<$T>"{N} where {T, N}
+const EssentiaPool{N} = cxxt"Pool"{N} where N
+
+"""
+Type definition for representing `essentia::Pool` using dictionaries, so that:
+    * keys are always the following:
+        * 'real'
+        * 'vector_real'
+        * 'string
+        * 'vector_string'
+        * 'matrix'
+        * 'stereo'
+        * 'single_real'
+        * 'single_vector_real'
+        * 'single_string
+        * 'single_vector_string'
+
+    * values are `Dict{String, T}` , where `T` changes
+        according to the key (see Pool C++
+        [docs](https://essentia.upf.edu/doxygen/classessentia_1_1Pool.html))
+
+Note that `"stereo"` corresponds to Essentia's `StereSample` which refer to C++
+`std::vector<StereoSample>` and are converted into `Matrix{Float32}` in Julia.
+"""
+const Pool = Dict{String, 
+                  Dict{String,
+                       Union{Float32,
+                             Vector{Float32},
+                             Vector{Vector{Float32}},
+                             String,
+                             Vector{String},
+                             Vector{Vector{String}},
+                             Vector{Matrix{Float32}},
+                        }
+                  }
+             }
 
 
 """
@@ -105,13 +140,14 @@ end
 """
     function es2julia(d::T, type_str::String) where T
 
-Perform conversion from a C+ pointer to Julia according to the description in
+Perform conversion from a C++ pointer to Julia according to the description in
 `type_str` (returned by `typeInfoToStr`)
 
 The return type changes according to `type_str`, so this function is NOT
 guaranteed to be type coherent, even though it should be so.
 """
 function es2julia(d::T, type_str::String) where T
+    # t = T.parameters[1]
     if type_str == "REAL" return unsafe_load(d)
     elseif type_str == "STRING" return unsafe_string(d)
     elseif type_str == "BOOL" return unsafe_load(d)
@@ -130,6 +166,11 @@ function es2julia(d::T, type_str::String) where T
         # @warn "Cannot convert from type $type_str to Julia!"
         return d
     end
+end
+# need a separate function because icxx tries to compile even when *d cannot be
+# converted to Pool
+function es2julia(d::cxxt"essentia::Pool*", type_str::String)
+    return convert(Pool, icxx"Pool v = *$d; v;")
 end
 
 """
@@ -288,13 +329,62 @@ function Base.convert(::Type{Matrix{K}}, x::EssentiaMatrix{K, T}) where {K, T}
     return result
 end
 
+# """
+# Convert C++ vector of numbers (not tuples and strings) to Julia vectors in-place
+
+# Used internally.
+# """
+# function Base.convert(::Type{Vector{T}}, x::EssentiaVector{T, K}) where {T<:Number, K}
+#     println("TO Remove...In-place conversion!")
+#     return unsafe_wrap(Vector{T}, icxx"$x.data();", icxx"$x.size();", own=true)
+# end
+
 """
-Convert C++ vector of numbers (not tuples and strings) to Julia vectors in-place
+Convert `essentia::Pool` to our `Pool` type.
 
 Used internally.
 """
-function Base.convert(::Type{Vector{T}}, x::EssentiaVector{T, K}) where {T<:Number, K}
-    return unsafe_wrap(Vector{T}, icxx"$x.data();", icxx"$x.size();", own=true)
+function Base.convert(::Type{Pool}, x::EssentiaPool)
+    out = Pool()
+
+    out["real"] = convert(Dict{String, Vector{Float32}}, icxx"$x.getRealPool();")
+    out["vector_real"] = convert(
+        Dict{String, Vector{Vector{Float32}}}, icxx"$x.getVectorRealPool();")
+    out["string"] = convert(
+        Dict{String, Vector{String}}, icxx"$x.getStringPool();")
+    out["vector_string"] = convert(
+        Dict{String, Vector{Vector{String}}}, icxx"$x.getVectorStringPool();")
+    out["matrix"] = convert(
+        Dict{String, Vector{Matrix{Float32}}}, icxx"$x.getArray2DRealPool();")
+    out["stereo"] = convert(
+        Dict{String, Matrix{Float32}}, icxx"$x.getStereoSamplePool();")
+
+    out["single_real"] = convert(Dict{String, Float32}, icxx"$x.getSingleRealPool();")
+    out["single_string"] = convert(
+        Dict{String, String}, icxx"$x.getSingleStringPool();")
+    out["single_vector_real"] = convert(
+        Dict{String, Vector{Float32}}, icxx"$x.getSingleVectorRealPool();")
+    out["single_vector_string"] = convert(
+        Dict{String, Vector{String}}, icxx"$x.getSingleVectorStringPool();")
+
+    return out
+end
+
+"""
+Convert C++ `std::map<std::string, T>` to `Dict{String, T}` type.
+
+Used internally.
+"""
+function Base.convert(::Type{Dict{String, T}}, x::cxxt"map<std::string, $V>&") where {V, T}
+    out = Dict{String, T}()
+    it = icxx"$x.begin();"
+    for i in 1:icxx"$x.size();"
+        key = unsafe_string(icxx"std::string v = $it->first;v;")
+        value = convert(T, icxx"$it->second;")
+        out[key] = value
+        icxx"$it++;"
+    end
+    return out
 end
 
 """

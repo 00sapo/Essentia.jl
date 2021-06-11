@@ -117,15 +117,12 @@ type conversion.
 
 ## Done
 
-* Standard algorithms
+* Standard algorithms (except for `TensorFlow`-based)
 * Audio in stereo are converted to and from Matrices with 2 columns
-* Conversion C++ vectors -> Julia vectors of numbers with no-copy (the inverse
-    is not possible because of C++ vector implementation)
 * You can still create and pass C++ data by using `icxx` and `cxx` macros to
     avoid data copy
 * Composition of functions with no-copy except for input/output of each call
-* Algorithms which return `Pool` objects now work, but user still needs to
-    interface using Cxx...
+* Support for algorithms returning `Pool` objects
 
 ## Missing
 
