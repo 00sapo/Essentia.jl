@@ -8,7 +8,7 @@ Julia bindings around Essentia C++ library for Music Information Retrieval
 * [Documentation of C++ API](https://essentia.upf.edu/doxygen/)
 
 
-## Usage
+## Tutorial
 
 To create an algorithm, just call `Algorithm` functor with parameters in Pair
 fashion:
@@ -33,13 +33,20 @@ internally to avoid copies while composing algorithms. In the examples above,
 and the second being a type descriptor. You can call an algorithm with this
 tuple as input:
 ```julia
-windowing_algo = Algorithm("Windowing", "type" => "hamming", "size" => ws)
-spec = Algorithm("Spectrum", "size" => ws)
 windowed = windowing_algo(a_vector_of_real)
-spectrum = spec(windowed)
+# adding another algorithm without copy
+spectrum = spec(windowed) 
+# spectrum is still a tuple of C++ objects
 ```
 
-To get the output inside a Julia object, just use the function `jj`.
+To get the output inside a Julia object, just use the function `jj`:
+
+```julia
+spectrum = jj(spectrum)
+# now spectrum is a Dict...
+output = spectrum["spectrum"]
+# this is the output (Vector{Float32} in this case)
+```
 
 For computing spectrograms, a `rollup` function is provided, which executes a
 custom function on all the frames extracted from an array:
@@ -50,10 +57,13 @@ win = Algorithm("Windowing", "type" => "hamming", "size" => ws)
 spec = Algorithm("Spectrum", "size" => ws)
 
 spectrogram = rollup(
-    Vector{Float32}, x -> jj(spec(win(x)))["spectrum"], audio, ws, hs, padding="minimum", padding_fill=0)
+    Vector{Float32},
+    x -> jj(spec(win(x)))["spectrum"],
+    audio, ws, hs, padding="minimum", padding_fill=0)
 ```
 
-You can get more custom paddings by using the `PaddedViews` package.
+You can get more custom paddings by using the `PaddedViews` package, or you can use
+the "FrameCutter" algorithm provided by Essentia...
 
 See `src/example.jl` and [docs](https://00sapo.github.io/Essentia.jl/build/) for more info.
 
@@ -75,7 +85,7 @@ type conversion.
 | Vector{Vector} | Vector_Vector        |
 | Matrix         | Matrix               |
 | Tuple          | StereoSample         |
-| Matrix         | Vector{StereoSample} |
+| Matrix         | Vector_StereoSample  |
 
 ## Installing
 
@@ -114,8 +124,10 @@ type conversion.
 ## Notes
 
 * this package turns on RTTI by setting the environment variable
-    `JULIA_CXX_RTTI="1"` when imported
-
+    `JULIA_CXX_RTTI=1` when imported
+* if you use the Cxx import, import it *after* the Essentia module, 
+    or set `ENV["JULIA_CXX_RTTI"] = 1` before of importing Cxx
+  
 ## Done
 
 * Standard algorithms (except for `TensorFlow`-based)
@@ -129,9 +141,9 @@ type conversion.
 
 * Functions in `essentia` namespace; however you can do:
     ```julia
-    using Cxx
     using Essentia
-    mel = 24.5
+    using Cxx
+    a = 24.5
     hz = icxx"essentia::mel2hz($a)"
     ```
 * Algorithms which need the `Tensor` type
