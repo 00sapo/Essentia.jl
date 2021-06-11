@@ -82,13 +82,25 @@ type conversion.
     Julia from 1.0.x to 1.3.x.
 
 * Julia 1.3.1 provides a `libstdc++.so` that is not up-to-date with some updated OS
-    To avoid this problem, you can `export LD_PRELOAD=$(cc -print-file-name=libstdc++.so)`
-    before of starting Julia.
+    To avoid this problem, you can use `LD_PRELOAD=$(cc -print-file-name=libstdc++.so)`
+    before of starting Julia, e.g.
 
-```julia
-Using Pkg
-Pkg.add("https://github.com/00sapo/Essentia.jl.git")
-```
+    ```shell
+    alias julia LD_PRELOAD=$(cc -print-file-name=libstdc++.so)
+    # or just start with
+    LD_PRELOAD=$(cc -print-file-name=libstdc++.so) julia
+    # export in the current session
+    export LD_PRELOAD=$(cc -print-file-name=libstdc++.so)
+    # or put the above in your startup file
+    ```
+
+* Because of the above issue, you have to install the package using the github
+    link:
+
+    ```julia
+    Using Pkg
+    Pkg.add("https://github.com/00sapo/Essentia.jl.git")
+    ```
 
 * For systems other than Linux (e.g. Mac OS and Windows) you have a few options:
     1. Try to install this package and... finger crossed
