@@ -72,7 +72,8 @@ Execute a function over frames extracted as views of an array
 
 * `padding_fill`: a value of type `K` with which `z` is padded
 
-To get custom paddings, consider using the `PaddedViews` package.
+To get custom paddings, consider using the `PaddedViews` package or the
+`FrameCutter` algorithm
 
 
 ## Returns

@@ -83,37 +83,47 @@ type conversion.
     Julia from 1.0.x to 1.3.x.
 
 * Julia 1.3.1 provides a `libstdc++.so` that is not up-to-date with some updated OS
-    To avoid this problem, you can `export LD_PRELOAD=$(cc -print-file-name=libstdc++.so)`
-    before of starting Julia.
+    To avoid this problem, you can use `LD_PRELOAD=$(cc -print-file-name=libstdc++.so)`
+    before of starting Julia, e.g.
 
-* To build Essentia, it is recommended to [install the dependencies by
-    yourself](https://essentia.upf.edu/installing.html#installing-dependencies-on-linux)
+    ```shell
+    alias julia LD_PRELOAD=$(cc -print-file-name=libstdc++.so)
+    # or just start with
+    LD_PRELOAD=$(cc -print-file-name=libstdc++.so) julia
+    # export in the current session
+    export LD_PRELOAD=$(cc -print-file-name=libstdc++.so)
+    # or put the above in your startup file
+    ```
 
-    Note for contributor: the build script provides a way to download and
-    statically compile the dependencies, but `AudioLoader` and similar
-    algorithms do not work...
+* Because of the above issue, you have to install the package using the github
+    link:
 
-```julia
-Using Pkg
-Pkg.add("https://github.com/00sapo/Essentia.jl.git")
-```
+    ```julia
+    Using Pkg
+    Pkg.add("https://github.com/00sapo/Essentia.jl.git")
+    ```
+
+* For systems other than Linux (e.g. Mac OS and Windows) you have a few options:
+    1. Try to install this package and... finger crossed
+    2. If it doesn't work, try to change `deps/build.jl` making it use the
+        correct Essentia build script (you find them in `essentia/packaging/`);
+        if you succeed, make a pull request, please.
+    3. Use Linux -- it's free
+    4. Really, try Linux, it's better
 
 ## Notes
 
 * this package turns on RTTI by setting the environment variable
-    `JULIA_CXX_RTTI="1"` at when imported
+    `JULIA_CXX_RTTI="1"` when imported
 
 ## Done
 
-* Standard algorithms
+* Standard algorithms (except for `TensorFlow`-based)
 * Audio in stereo are converted to and from Matrices with 2 columns
-* Conversion C++ vectors -> Julia vectors of numbers with no-copy (the inverse
-    is not possible because of C++ vector implementation)
 * You can still create and pass C++ data by using `icxx` and `cxx` macros to
     avoid data copy
 * Composition of functions with no-copy except for input/output of each call
-* Algorithms which return `Pool` objects now work, but user still needs to
-    interface using Cxx...
+* Support for algorithms returning `Pool` objects
 
 ## Missing
 
@@ -131,8 +141,7 @@ Pkg.add("https://github.com/00sapo/Essentia.jl.git")
 
 * The package cannot be pre-compiled. As such, it is compiled at the first
     import in your code.
-* Cannot automatically compile the module because of the linking problem; as
-    consequence, cannot use github actions or CI systems
+* Cannot register the module on JuliaHub because of the linking problem.
 
 # TODO
 
