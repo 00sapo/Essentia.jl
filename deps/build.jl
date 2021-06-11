@@ -1,19 +1,41 @@
+using ZipFile
 # setting JULIA_CXX_RTTI
 ENV["JULIA_CXX_RTTI"] = 1
 
+function unzip(file,exdir="")
+    fileFullPath = isabspath(file) ?  file : joinpath(pwd(),file)
+    basePath = dirname(fileFullPath)
+    outPath = (exdir == "" ? basePath : (isabspath(exdir) ? exdir : joinpath(pwd(),exdir)))
+    isdir(outPath) ? "" : mkdir(outPath)
+    zarchive = ZipFile.Reader(fileFullPath)
+    for f in zarchive.files
+        fullFilePath = joinpath(outPath,f.name)
+        if (endswith(f.name,"/") || endswith(f.name,"\\"))
+            mkdir(fullFilePath)
+        else
+            write(fullFilePath, read(f))
+        end
+    end
+    close(zarchive)
+end
+
+# entering root dir of the package
 cur_dir = pwd()
 cd(joinpath(@__DIR__, ".."))
 
-if !isdir("essentia")
-    run(`git submodule update --init`)
+# removing old build
+if isdir("essentia")
+    run(`rm -rf essentia`)
 end
 
-# checkout last python release (need to find a way for auto select it...)
-cd("essentia")
+# downloading essentia
 # commit 13 january 2021 (2.1-b6)
-run(`git reset --hard 554502a06a39ebbe0de1b4797e3456ba18a090b1`)
-# commit 2019 (2.1-b5)
-# run(`git reset --hard ed59cc48`)
+commit = "554502a06a39ebbe0de1b4797e3456ba18a090b1"
+zippath = download("https://github.com/MTG/essentia/archive/$commit.zip")
+unzip(zippath, ".")
+run(`mv essentia-$commit essentia`)
+
+cd("essentia")
 
 # overwrite configuration (need to use `--disable-yasm`)
 cp("../build_config.sh", "./packaging/build_config.sh"; force=true)
@@ -25,7 +47,7 @@ catch exc
     println("cannot clean an uncofigured project!")
 end
 
-# # downloading and building dependencies
+# downloading and building dependencies
 run(`./packaging/build_3rdparty_static_debian.sh`)
 
 # configuring with static dependencies
