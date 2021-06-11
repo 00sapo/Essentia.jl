@@ -40,15 +40,24 @@ cd("essentia")
 # overwrite configuration (need to use `--disable-yasm`)
 cp("../build_config.sh", "./packaging/build_config.sh"; force=true)
 
+# recursively search .sh file and add execution permission
+for (root, dirs, files) in walkdir(".")
+    for file in files
+        if endswith(file, ".sh")
+            chmod(joinpath(root, file), 0o777)
+        end
+    end
+end
+
 # cleaning previous configurations (if rebuilding...)
 try
-    run(`./waf clean`)
+    run(`python ./waf clean`)
 catch exc
-    println("cannot clean an uncofigured project!")
+    println("cannot clean an unconfigured project!")
 end
 
 # downloading and building dependencies
-run(`sh ./packaging/build_3rdparty_static_debian.sh`)
+run(`./packaging/build_3rdparty_static_debian.sh`)
 
 # configuring with static dependencies
 run(`python ./waf configure --static-dependencies -v`)
