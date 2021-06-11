@@ -5,8 +5,11 @@ version = "0.1.0"
 
 [deps]
 Cxx = "a0b5b9ef-44b7-5148-a2d1-f6db19f3c3d2"
+Debugger = "31a5f54b-26ea-5ae9-a837-f05ce5417438"
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
 DocumenterTools = "35a29f4d-8980-5a13-9543-d66fff28ecb8"
+Infiltrator = "5903a43b-9cc3-4c30-8d17-598619ec4e9b"
 Libdl = "8f399da3-3557-5675-b5ff-fb832c97cbdb"
 PaddedViews = "5432bcbf-9aad-5242-b902-cca2824c8663"
+Revise = "295af30f-e4ad-537b-8983-00126c2a3abe"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"

@@ -85,22 +85,23 @@ type conversion.
     To avoid this problem, you can `export LD_PRELOAD=$(cc -print-file-name=libstdc++.so)`
     before of starting Julia.
 
-* To build Essentia, it is recommended to [install the dependencies by
-    yourself](https://essentia.upf.edu/installing.html#installing-dependencies-on-linux)
-
-    Note for contributor: the build script provides a way to download and
-    statically compile the dependencies, but `AudioLoader` and similar
-    algorithms do not work...
-
 ```julia
 Using Pkg
 Pkg.add("https://github.com/00sapo/Essentia.jl.git")
 ```
 
+* For systems other than Linux (e.g. Mac OS and Windows) you have a few options:
+    1. Try to install this package and... finger crossed
+    2. If it doesn't work, try to change `deps/build.jl` making it use the
+        correct Essentia build script (you find them in `essentia/packaging/`);
+        if you succeed, make a pull request, please.
+    3. Use Linux -- it's free
+    4. Really, try Linux, it's better
+
 ## Notes
 
 * this package turns on RTTI by setting the environment variable
-    `JULIA_CXX_RTTI="1"` at when imported
+    `JULIA_CXX_RTTI="1"` when imported
 
 ## Done
 
@@ -130,8 +131,7 @@ Pkg.add("https://github.com/00sapo/Essentia.jl.git")
 
 * The package cannot be pre-compiled. As such, it is compiled at the first
     import in your code.
-* Cannot automatically compile the module because of the linking problem; as
-    consequence, cannot use github actions or CI systems
+* Cannot register the module on JuliaHub because of the linking problem.
 
 # TODO
 
