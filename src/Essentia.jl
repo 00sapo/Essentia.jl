@@ -81,15 +81,14 @@ Essentia.Algorithm("MFCC", :dctType=>3, :logType="natural")
 
 ## Running
 
-    function (
-        self::Algorithm)(inputs::Pair{String, T}...
-    ) where T
-
-    function (self::Algorithm)(inputs::T...) where T
+    function (self::Algorithm)(inputs::Pair{String, T}...; force=false) where T
 
     function (
-        self::Algorithm)(inputs::Tuple{Vector{Pair{String, T}}, Vector{V}}
-    ) where T
+        self::Algorithm)(inputs::Union{AbstractArray{T}, Number, AbstractString}...; force=false) where T
+
+    function (self::Algorithm)(inputs::Tuple{Vector{Pair}, V}; force=false) where V
+
+    function (self::Algorithm)()
 
 Executes the algorithm. Note that while this function is running, the garbage-collector is suspended!
 
@@ -102,7 +101,7 @@ Executes the algorithm. Note that while this function is running, the garbage-co
 
 OR
 
-* a variadic number of C++ or Julia objects in the same order as Essentia documentation
+* a variadic number of Julia objects in the same order as Essentia documentation
 
 OR
 
@@ -110,6 +109,9 @@ OR
     * pair keys are strings with the same name as Essentia documentation 
     * pair values are C++ objects
     * `V` is a type descriptor
+
+An optional boolean key `force` is available for methods 1 and 3; if `true`, the
+keys are discarded and values are considered to match the keys in same order as Essentia docs
 
 ### Returns
 
@@ -140,7 +142,7 @@ struct Algorithm{T}
     end
 end
 
-function _compute(self::Algorithm, inputs::Pair{String, T}...) where T
+function _compute(self::Algorithm, force, inputs::Pair{String, T}...) where T
     # disable GC
     GC.enable(false)
     if length(inputs) != self.ninp
@@ -158,7 +160,11 @@ function _compute(self::Algorithm, inputs::Pair{String, T}...) where T
         # converting julia to C++
         # if inputs are already C++, they're left untouched
         k = unsafe_string(name)
-        v = juliaInputs[k]
+        if force
+            v = inputs[i].second
+        else
+            v = juliaInputs[k]
+        end
         if typeInfoToStr(inputTypes[i - 1]) == "VECTOR_STEREOSAMPLE"
             _v = convert(EssentiaVector{EssentiaTuple}, v)
         else
@@ -198,22 +204,22 @@ function _compute(self::Algorithm, inputs::Pair{String, T}...) where T
 end
 
 function (self::Algorithm)(
-    inputs::Pair{String, T}...) where T
+    inputs::Pair{String, T}...; force=false) where T
 
-    return _compute(self, inputs...)
+    return _compute(self, force, inputs...)
 end
 
-function (self::Algorithm)(inputs::Tuple{Vector{Pair}, V}) where V
-    return _compute(self, inputs[1]...)
+function (self::Algorithm)(inputs::Tuple{Vector{Pair}, V}; force=false) where V
+    return _compute(self, force, inputs[1]...)
 end
 
 function (self::Algorithm)()
-    return _compute(self)
+    return _compute(self, false)
 end
 
-function (self::Algorithm)(inputs::Union{AbstractArray{T}, Number, AbstractString}...) where T
+function (self::Algorithm)(inputs::Union{AbstractArray{T}, Number, AbstractString}...; force=false) where T
     inputNames = icxx"vector<string> inputNames = $(self.algo)->inputNames(); inputNames;"
-    _compute(self, (unsafe_string(n) => inputs[i] for (i, n) in enumerate(inputNames))...)
+    _compute(self, force, (unsafe_string(n) => inputs[i] for (i, n) in enumerate(inputNames))...)
 end
 
 include("Utils.jl")

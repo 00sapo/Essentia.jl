@@ -34,14 +34,20 @@ A functor for composing `Algorithm` instances.
 ## Arguments
 * `algos` should be a `Vector{Algorithm}` in the order of composition (outer function first)
 * `output` is the key of the output you want to get
+
+When you call, a boolean key `force` allows to match non-corresponding algorithms (see `Algorithm` docs).
 """
 struct EssentiaComp{T}
     algos::Vector{T}
     output::Union{Nothing, String}
 end
 
-function (self::EssentiaComp)(x...)
-    fn = ∘(self.algos...)
+function (self::EssentiaComp)(x...; force=true)
+    if !force
+        fn = ∘(self.algos...)
+    else
+        fn = ∘([x::Vararg -> a(x...; force=true) for a in self.algos]...)
+    end
     if self.output === nothing
         return jj(fn(x...))
     else
@@ -63,6 +69,8 @@ into this:
 Note the inverse order of the algorithms, that is:
 * In `EssentiaComp`, the algorithms appear in the same order you would write them to compose functions (i.e. outer function first)
 * In `es` algorithms appear in the order they are computed (i.e. outer function last)
+
+For now, `force=true` always here
 """
 macro es(expr...)
     local L = length(expr)
