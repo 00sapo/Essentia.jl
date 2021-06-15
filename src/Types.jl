@@ -1,4 +1,4 @@
-export EssentiaTuple, EssentiaVector, EssentiaFactory, EssentiaComplex, EssentiaMatrix
+export EssentiaTuple, EssentiaVector, EssentiaFactory, EssentiaComplex, EssentiaMatrix, EssentiaPool
 
 const EssentiaVector{T, N} = cxxt"vector<$T>"{N} where {T, N}
 const EssentiaTuple{T, N} = cxxt"Tuple2<$T>"{N} where {T, N}
@@ -184,10 +184,16 @@ them; for this reason, you need to use this function to deal with Essentia's str
 The return type changes according to `T`, so this function is type coherent
 """
 function julia2es_number(n::Type)
-    if n <: Integer
+    if n <: Bool
+        return Bool
+    elseif n <: Signed
         return Int32
-    elseif n <: Real
+    elseif n <: Unsigned
+        return UInt32
+    elseif n <: AbstractFloat
         return Float32
+    elseif n <: Complex
+        return ComplexF32
     end
 end
 function julia2es(d::T) where T
