@@ -203,10 +203,12 @@ function julia2es(d::T) where T
         return convert(EssentiaTuple{T.parameters[1]}, d)
     elseif T <: AbstractArray
         L = T.parameters[1]
-        if L <: Number
+        if L <: AbstractString
+            K = cxxt"std::string"
+        elseif L <: Number
             # a vector
             K = julia2es_number(L)
-        elseif L <: AbstractTuple
+        elseif L <: Tuple
             # a vector of tuples
             V = julia2es_number(L.parameters[1])
             return convert(EssentiaVector{EssentiaTuple{V}}, d)
