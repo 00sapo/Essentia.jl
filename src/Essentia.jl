@@ -6,7 +6,6 @@ using Cxx
 using Libdl
 include("Init.jl")
 include("Types.jl")
-include("Utils.jl")
 
 export Algorithm
 
@@ -210,4 +209,5 @@ function (self::Algorithm)(inputs::Union{AbstractArray{T}, Number, AbstractStrin
     _compute(self, (unsafe_string(n) => inputs[i] for (i, n) in enumerate(inputNames))...)
 end
 
+include("Utils.jl")
 end # module

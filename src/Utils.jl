@@ -1,5 +1,5 @@
 using PaddedViews
-export rollup, jj
+export rollup, jj, EssentiaComp, @es
 
 """
     function jj(objects::Tuple{Vector{Pair}, V})::Dict where V
@@ -22,6 +22,62 @@ function jj(objects::Tuple{Vector{Pair}, V})::Dict where V
     end
     return out
 end
+
+"""
+    struct EssentiaComp {T}
+        algos::Vector{T}
+        output::Union{Nothing, String}
+    end
+
+A functor for composing `Algorithm` instances.
+
+## Arguments
+* `algos` should be a `Vector{Algorithm}` in the order of composition (outer function first)
+* `output` is the key of the output you want to get
+"""
+struct EssentiaComp{T}
+    algos::Vector{T}
+    output::Union{Nothing, String}
+end
+
+function (self::EssentiaComp)(x...)
+    fn = ∘(self.algos...)
+    if self.output === nothing
+        return jj(fn(x...))
+    else
+        return jj(fn(x...))[self.output]
+    end
+end
+
+"""
+A simple macro which expands this:
+
+    @es algo1 algo2 "output"
+    @es algo1 algo2
+
+into this:
+
+    EssentiaComp([algo2, algo1], "output")
+    EssentiaComp([algo2, algo1], nothing)
+
+Note the inverse order of the algorithms, that is:
+* In `EssentiaComp`, the algorithms appear in the same order you would write them to compose functions (i.e. outer function first)
+* In `es` algorithms appear in the order they are computed (i.e. outer function last)
+"""
+macro es(expr...)
+    local L = length(expr)
+    if typeof(expr[end]) === String
+        local output = expr[end]
+        local algos = expr[1:end-1]
+    else
+        local output = nothing
+        local algos = expr
+    end
+    quote
+        EssentiaComp([$(esc.(reverse(algos))...)], $output)
+    end
+end
+
 
 """
     function rollup(::Type{T},

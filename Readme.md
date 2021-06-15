@@ -48,6 +48,26 @@ output = spectrum["spectrum"]
 # this is the output (Vector{Float32} in this case)
 ```
 
+Or, to make it more conveniente composing algorithms, you can use the `@es` macro and `EssentiaComp`
+functor; the former is actually anoter way to use the latter, which is itself a
+functor for using `∘` Julia operator + `jj` function. Since it's a functor, it's
+a performant way to create composition of algorithms and to pass them as
+argument of functions.
+
+```julia
+# using ∘
+fn = ∘(spec, windowing_algo)
+jj(fn(audio))["spectrum"]
+
+# using EssentiaComp
+fn = EssentiaComp([spec, windowing_algo], "spectrum")
+fn(audio)
+
+# using @es macro
+fn = @es windowing_algo spec "spectrum"
+fn(audio)
+```
+
 For computing spectrograms, a `rollup` function is provided, which executes a
 custom function on all the frames extracted from an array:
 ```julia
@@ -58,7 +78,7 @@ spec = Algorithm("Spectrum", "size" => ws)
 
 spectrogram = rollup(
     Vector{Float32},
-    x -> jj(spec(win(x)))["spectrum"],
+    @es win spec "spectrum",
     audio, ws, hs, padding="minimum", padding_fill=0)
 ```
 

@@ -13,15 +13,18 @@ using Essentia
         windowed = win(audio)
         spectrum = spec(windowed)
 
-        @testset "algorithms" begin
+        @testset "Algorithms" begin
             @test typeof(win) <: Algorithm
             @test typeof(windowed) <: Tuple
             @test typeof(spectrum) <: Tuple
         end
 
+        es_spec_computer = @es win spec "spectrum"
+        es_spec = es_spec_computer(audio)
         jj_spec = jj(spectrum)["spectrum"]
-        @testset "jj" begin
+        @testset "jj and es" begin
             @test all(jj_spec .> 0)
+            @test all(es_spec .> 0)
         end
 
         # @testset "no-copy conversion" begin
