@@ -56,15 +56,18 @@ argument of functions.
 
 ```julia
 # using ∘
-fn = ∘(spec, windowing_algo)
-jj(fn(audio))["spectrum"]
+fn = x -> jj(∘(spec, windowing_algo)(audio))["spectrum"]
+# you see that the syntax is complex and the fn is not of concrete type
 
 # using EssentiaComp
 fn = EssentiaComp([spec, windowing_algo], "spectrum")
-fn(audio)
+# it's a concrete type, bu the syntax is ugly
 
 # using @es macro
 fn = @es windowing_algo spec "spectrum"
+# it's concrete and with a clean syntax
+
+# execute:
 fn(audio)
 ```
 
@@ -147,7 +150,7 @@ type conversion.
     `JULIA_CXX_RTTI=1` when imported
 * if you use the Cxx import, import it *after* the Essentia module, 
     or set `ENV["JULIA_CXX_RTTI"] = 1` before of importing Cxx
-  
+
 ## Done
 
 * Standard algorithms (except for `TensorFlow`-based)
