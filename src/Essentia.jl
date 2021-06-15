@@ -30,7 +30,14 @@ for type in ["standard", "streaming"]
                 try
                     return icxx\"\"\"
                         $type::AlgorithmFactory& factory = $type::AlgorithmFactory::instance();
-                        $type::Algorithm* algo = factory.create(\$name $(_params2cppcode(i)));
+                        $type::Algorithm* algo;
+                        try {
+                            algo = factory.create(\$name $(_params2cppcode(i)));
+                        } catch (const std::exception &exc) {
+                            std::cerr << "C++ Eception:" << endl;
+                            std::cerr << exc.what() << std::endl;
+                            throw exc;
+                        }
                         return algo;
                     \"\"\"
                 catch exception
