@@ -134,9 +134,7 @@ struct Algorithm{T}
     end
 end
 
-function (self::Algorithm)(
-    inputs::Pair{String, T}...) where T
-
+function _compute(self::Algorithm, inputs::Pair{String, T}...) where T
     # disable GC
     GC.enable(false)
     if length(inputs) != self.ninp
@@ -188,17 +186,28 @@ function (self::Algorithm)(
         # throw the exception
         throw(EssentiaException(exc))
     end
+    
     # return
     return outputs, outputTypes
 end
 
+function (self::Algorithm)(
+    inputs::Pair{String, T}...) where T
+
+    return _compute(self, inputs...)
+end
+
 function (self::Algorithm)(inputs::Tuple{Vector{Pair}, V}) where V
-    return self(inputs[1]...)
+    return _compute(self, inputs[1]...)
+end
+
+function (self::Algorithm)()
+    return _compute(self)
 end
 
 function (self::Algorithm)(inputs::Union{AbstractArray{T}, Number, AbstractString}...) where T
     inputNames = icxx"vector<string> inputNames = $(self.algo)->inputNames(); inputNames;"
-    self((unsafe_string(n) => inputs[i] for (i, n) in enumerate(inputNames))...)
+    _compute(self, (unsafe_string(n) => inputs[i] for (i, n) in enumerate(inputNames))...)
 end
 
 end # module
