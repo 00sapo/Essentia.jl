@@ -94,7 +94,7 @@ end
                     ws::Integer,
                     hs::Integer,
                     padding::String="minimum",
-                    padding_fill::K=0.0) where {T, K<:Number}
+                    padding_fill::Real=0.0) where {T, K<:Number}
 
 Execute a function over frames extracted as views of an array
 
@@ -153,7 +153,7 @@ function rollup(::Type{T},
                 ws::Integer,
                 hs::Integer,
                 padding::String="minimum",
-                padding_fill::K=0.0) where {T, K<:Number}
+                padding_fill::Real=0.0) where {T, K<:Number}
 
     # padding
     L = length(z)
