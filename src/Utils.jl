@@ -37,7 +37,7 @@ A functor for composing `Algorithm` instances.
 
 When you call, a boolean key `force` allows to match non-corresponding algorithms (see `Algorithm` docs).
 """
-struct EssentiaComp{T}
+struct EssentiaComp{T} <: Function
     algos::Vector{T}
     output::Union{Nothing, String}
 end
